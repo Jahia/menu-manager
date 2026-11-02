@@ -2166,15 +2166,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next@npm:^26.4.2":
-  version: 26.5.6
-  resolution: "i18next@npm:26.5.6"
+"i18next@npm:^26.5.12":
+  version: 26.5.12
+  resolution: "i18next@npm:26.5.12"
   peerDependencies:
     typescript: ^5 || ^6 || ^7
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10c0/0c7d2a54c7259b86632545e28efe3c0baeb4d9b1b7360bf43055c8ac8d522740c3216ddeeac25be67b16ec9c0f7ef7060bd3039ed579f6485a02da01fb358dd0
+  checksum: 10c0/9723eeb9c938a35fa66c555841172de32a51a4216fa2ca3432747bba4bd1644d77301601a16f6f857b842c2b3354128f80dc3608b9059d1be7479b94193ae9b3
   languageName: node
   linkType: hard
 
@@ -2537,7 +2537,7 @@ __metadata:
     eslint-plugin-sonarjs: "npm:^4.2.2"
     eslint-plugin-unicorn: "npm:^77.0.0"
     globals: "npm:^16.0.0"
-    i18next: "npm:^26.4.2"
+    i18next: "npm:^26.5.12"
     prettier: "npm:^3.5.3"
     react: "npm:^19.1.0"
     react-i18next: "npm:^17.0.14"
