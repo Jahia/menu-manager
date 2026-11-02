@@ -28,6 +28,14 @@ public class GqlEditableItem {
     List<String> invalidLanguages;
     GqlTarget target;
     boolean publicAccess;
+    String promoTitle;
+    String fallbackPromoTitle;
+    String promoText;
+    String promoLinkLabel;
+    String promoImageAlt;
+    GqlTarget promoImage;
+    GqlTarget promoTarget;
+    String promoUrl;
     List<GqlEditableItem> children;
 
     /** @return identifier of the item */
@@ -106,6 +114,54 @@ public class GqlEditableItem {
     @GraphQLField @GraphQLName("publicAccess") @GraphQLNonNull
     public boolean publicAccess() {
         return publicAccess;
+    }
+
+    /** @return the promotion's title in the edited language, or null */
+    @GraphQLField @GraphQLName("promoTitle")
+    public String promoTitle() {
+        return promoTitle;
+    }
+
+    /** @return the promotion's title in the fallback language, or null */
+    @GraphQLField @GraphQLName("fallbackPromoTitle")
+    public String fallbackPromoTitle() {
+        return fallbackPromoTitle;
+    }
+
+    /** @return the promotion's text in the edited language, or null */
+    @GraphQLField @GraphQLName("promoText")
+    public String promoText() {
+        return promoText;
+    }
+
+    /** @return the promotion's button label in the edited language, or null */
+    @GraphQLField @GraphQLName("promoLinkLabel")
+    public String promoLinkLabel() {
+        return promoLinkLabel;
+    }
+
+    /** @return the promotion image's text alternative in the edited language, or null */
+    @GraphQLField @GraphQLName("promoImageAlt")
+    public String promoImageAlt() {
+        return promoImageAlt;
+    }
+
+    /** @return the promotion's image, or null */
+    @GraphQLField @GraphQLName("promoImage")
+    public GqlTarget promoImage() {
+        return promoImage;
+    }
+
+    /** @return the node the promotion's button opens, or null */
+    @GraphQLField @GraphQLName("promoTarget")
+    public GqlTarget promoTarget() {
+        return promoTarget;
+    }
+
+    /** @return the address the promotion's button opens, or null */
+    @GraphQLField @GraphQLName("promoUrl")
+    public String promoUrl() {
+        return promoUrl;
     }
 
     /** @return the item's own items */

@@ -1,6 +1,7 @@
 package org.jahia.community.menumanager.service.internal;
 
 import org.jahia.community.menumanager.model.MenuItemKind;
+import org.jahia.community.menumanager.model.Promotion;
 import org.jahia.community.menumanager.model.ResolvedItem;
 import org.jahia.community.menumanager.model.ResolvedMenu;
 import org.jahia.community.menumanager.service.spi.MenuResolver;
@@ -37,6 +38,8 @@ public class MenuResolverImpl implements MenuResolver {
     static final String MENU_TYPE = "mnu:menu";
     static final String ITEM_MIXIN = "mnumix:menuItem";
     static final String PAGE_TYPE = "jnt:page";
+    /** classic-templates' page-level menu promotion, read when a page item has none of its own. */
+    static final String PAGE_PROMOTION = "ctplmix:navPromo";
     static final String INVALID_LANGUAGES = "j:invalidLanguages";
     /** Jahia's own "hide in navigation menus" flag, and classic-templates' "Hide from navigation". */
     static final List<String> HIDE_FLAGS = List.of("j:hideInNavMenu", "ctplHideFromNav");
@@ -73,7 +76,15 @@ public class MenuResolverImpl implements MenuResolver {
         }
         for (JCRNodeWrapper child : parent.getNodes()) {
             if (child.isNodeType(ITEM_MIXIN) && !invalidIn(child, ctx.language)) {
-                item(child, depth, ctx).ifPresent(out::add);
+                Optional<ResolvedItem> resolved = item(child, depth, ctx);
+                if (resolved.isPresent() && depth == 1) {
+                    // Promotions show beside a top-level item's columns (mega menu): resolved there only.
+                    ResolvedItem i = resolved.get();
+                    Promotion promotion = promotion(child, i.kind() == MenuItemKind.PAGE ? target(child, "page") : null, ctx);
+                    resolved = Optional.of(new ResolvedItem(i.id(), i.kind(), i.label(), i.description(), i.style(), i.targetId(),
+                            i.targetPath(), i.externalUrl(), i.newTab(), i.current(), i.inTrail(), i.children(), promotion));
+                }
+                resolved.ifPresent(out::add);
             }
         }
         return out;
@@ -97,7 +108,7 @@ public class MenuResolverImpl implements MenuResolver {
                 String shown = first(label, fallbackLabel);
                 yield shown == null || kids.isEmpty() ? Optional.empty()
                         : Optional.of(new ResolvedItem(node.getIdentifier(), kind, shown, description, style, null, null, null,
-                        false, false, false, kids));
+                        false, false, false, kids, null));
             }
             case INTERNAL_LINK -> {
                 JCRNodeWrapper target = target(node, "target");
@@ -109,13 +120,13 @@ public class MenuResolverImpl implements MenuResolver {
                         target.getDisplayableName());
                 yield Optional.of(new ResolvedItem(node.getIdentifier(), kind, shown, description, style, target.getIdentifier(),
                         target.getPath(), null, bool(node, "newTab"), ctx.isCurrent(target), ctx.inTrail(target),
-                        children(node, depth + 1, ctx)));
+                        children(node, depth + 1, ctx), null));
             }
             case EXTERNAL_LINK -> {
                 String url = UrlPolicy.check(text(node, "url")).orElse(null);
                 yield url == null ? Optional.empty()
                         : Optional.of(new ResolvedItem(node.getIdentifier(), kind, first(label, fallbackLabel, url), description, style, null, null, url,
-                        bool(node, "newTab"), false, false, children(node, depth + 1, ctx)));
+                        bool(node, "newTab"), false, false, children(node, depth + 1, ctx), null));
             }
         };
     }
@@ -138,7 +149,7 @@ public class MenuResolverImpl implements MenuResolver {
             kids.addAll(subpages(page, depth + 1, ctx));
         }
         return Optional.of(new ResolvedItem(node.getIdentifier(), MenuItemKind.PAGE, shown, description, style, page.getIdentifier(),
-                page.getPath(), null, false, ctx.isCurrent(page), ctx.inTrail(page), kids));
+                page.getPath(), null, false, ctx.isCurrent(page), ctx.inTrail(page), kids, null));
     }
 
     /**
@@ -157,12 +168,58 @@ public class MenuResolverImpl implements MenuResolver {
             String title = first(text(child, "jcr:title"), ctx.fallback(child, "jcr:title"));
             if (title != null) {
                 out.add(new ResolvedItem(child.getIdentifier(), MenuItemKind.PAGE, title, null, "default", child.getIdentifier(),
-                        child.getPath(), null, false, ctx.isCurrent(child), ctx.inTrail(child), subpages(child, depth + 1, ctx)));
+                        child.getPath(), null, false, ctx.isCurrent(child), ctx.inTrail(child), subpages(child, depth + 1, ctx), null));
             }
         }
         return out;
     }
 
+
+    /**
+     * The item's own promotion when it has a title, else its page's classic-templates promotion, else null.
+     */
+    Promotion promotion(JCRNodeWrapper item, JCRNodeWrapper page, Context ctx) throws RepositoryException {
+        String title = first(text(item, "promoTitle"), ctx.fallback(item, "promoTitle"));
+        if (title != null) {
+            return promotionOf(item, title, new String[]{"promoText", "promoImage", "promoImageAlt", "promoLinkLabel", "promoTarget", "promoUrl"}, ctx);
+        }
+        if (page != null && isNodeType(page, PAGE_PROMOTION)) {
+            String pageTitle = first(text(page, "promoTitle"), ctx.fallback(page, "promoTitle"));
+            if (pageTitle != null) {
+                return promotionOf(page, pageTitle, new String[]{"promoText", "image", "imageAlt", "ctaLabel", "promoLink", "promoUrl"}, ctx);
+            }
+        }
+        return null;
+    }
+
+    /** A promotion read from {@code source}; {@code names} are its text, image, alt, label, link and address properties. */
+    private Promotion promotionOf(JCRNodeWrapper source, String title, String[] names, Context ctx) throws RepositoryException {
+        JCRNodeWrapper image = target(source, names[1]);
+        if (image != null) {
+            ctx.dependencies.add(image.getPath());
+        }
+        JCRNodeWrapper link = target(source, names[4]);
+        if (link != null && invalidIn(link, ctx.language)) {
+            link = null;
+        }
+        if (link != null) {
+            ctx.dependencies.add(link.getPath());
+        }
+        String url = link != null ? null : UrlPolicy.check(first(text(source, names[5]), ctx.fallback(source, names[5]))).orElse(null);
+        return new Promotion(title, first(text(source, names[0]), ctx.fallback(source, names[0])),
+                image == null ? null : image.getIdentifier(), first(text(source, names[2]), ctx.fallback(source, names[2])),
+                first(text(source, names[3]), ctx.fallback(source, names[3])),
+                link == null ? null : link.getIdentifier(), link == null ? null : link.getPath(), url);
+    }
+
+    /** {@code isNodeType} that answers false for a type no installed module declares (classic-templates absent). */
+    static boolean isNodeType(JCRNodeWrapper node, String type) {
+        try {
+            return node.isNodeType(type);
+        } catch (RepositoryException e) {
+            return false;
+        }
+    }
 
     /**
      * The node a weak reference points to, or null when it is gone, unpublished in this workspace, or

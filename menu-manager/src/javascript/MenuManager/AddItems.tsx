@@ -4,7 +4,7 @@ import {useQuery} from '@apollo/client';
 import {Accordion, AccordionItem, Button, Checkbox, Input, Link, Loader, OpenInNew, Page, Text, Typography} from '@jahia/moonstone';
 import {NS} from '../i18n';
 import {PAGES} from './graphql';
-import {Item, newKey, Target} from './tree';
+import {Item, newKey, NO_PROMO, Target, URL_OK} from './tree';
 import styles from './MenuManager.module.css';
 
 export interface AddItemsProps {
@@ -22,7 +22,7 @@ interface PageNode {
 
 const blank = (kind: Item['kind'], patch: Partial<Item>): Item => ({
     key: newKey(), kind, label: '', description: '', style: 'default', includeSubpages: false, newTab: false, url: '',
-    invalidLanguages: [], target: null, children: [], ...patch
+    invalidLanguages: [], target: null, promo: NO_PROMO, children: [], ...patch
 });
 
 /**
@@ -145,7 +145,7 @@ const ExternalPanel = ({onAdd}: {onAdd: (items: Item[]) => void}): JSX.Element =
     const {t} = useTranslation(NS);
     const [url, setUrl] = useState('https://');
     const [label, setLabel] = useState('');
-    const valid = /^(https?:\/\/[^\s/?#\\]+|mailto:\S+|tel:\S+)/i.test(url.trim());
+    const valid = URL_OK.test(url.trim());
     return (
         <div className={styles.panelBody}>
             <Typography variant="caption" className={styles.muted}>{t('add.externalHelp')}</Typography>

@@ -20,6 +20,7 @@ import java.util.List;
  * @param current     whether the target is the page being rendered
  * @param inTrail     whether the page being rendered is under the target
  * @param children    the visible children, in menu order
+ * @param promotion   the promotion of a top-level item, or null
  */
 public record ResolvedItem(
         String id,
@@ -33,7 +34,8 @@ public record ResolvedItem(
         boolean newTab,
         boolean current,
         boolean inTrail,
-        List<ResolvedItem> children) {
+        List<ResolvedItem> children,
+        Promotion promotion) {
 
     /**
      * Copies the children list, so the record stays immutable.

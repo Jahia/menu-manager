@@ -147,6 +147,7 @@ public class MenuStoreImpl implements MenuStore {
             }
             node.setProperty(MenuResolverImpl.INVALID_LANGUAGES, item.invalidLanguages().toArray(new String[0]));
         }
+        writePromo(session, node, item.promo());
         switch (item.kind()) {
             case PAGE -> {
                 JCRNodeWrapper page = reference(session, item.reference());
@@ -167,6 +168,28 @@ public class MenuStoreImpl implements MenuStore {
             case SECTION -> {
                 // a label and children only
             }
+        }
+    }
+
+    private static void writePromo(JCRSessionWrapper session, JCRNodeWrapper node, MenuTree.Promo promo) throws MenuException, RepositoryException {
+        setOrRemove(node, "promoTitle", promo.title());
+        setOrRemove(node, "promoText", promo.text());
+        setOrRemove(node, "promoLinkLabel", promo.linkLabel());
+        setOrRemove(node, "promoImageAlt", promo.imageAlt());
+        setOrRemove(node, "promoUrl", promo.url());
+        if (promo.image() == null) {
+            setOrRemove(node, "promoImage", null);
+        } else {
+            JCRNodeWrapper image = reference(session, promo.image());
+            if (!image.isNodeType("jmix:image")) {
+                throw new MenuException(MenuException.BAD_TARGET, "Not an image: " + promo.image());
+            }
+            node.setProperty("promoImage", session.getValueFactory().createValue(image, true));
+        }
+        if (promo.target() == null) {
+            setOrRemove(node, "promoTarget", null);
+        } else {
+            node.setProperty("promoTarget", session.getValueFactory().createValue(reference(session, promo.target()), true));
         }
     }
 

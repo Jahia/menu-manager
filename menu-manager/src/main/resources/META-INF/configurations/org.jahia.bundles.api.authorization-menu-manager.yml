@@ -17,5 +17,10 @@ menu-manager_resolve:
         graphql.MenuManagerResolvedItem.style, graphql.MenuManagerResolvedItem.targetId,
         graphql.MenuManagerResolvedItem.targetPath, graphql.MenuManagerResolvedItem.url,
         graphql.MenuManagerResolvedItem.newTab, graphql.MenuManagerResolvedItem.current,
-        graphql.MenuManagerResolvedItem.inTrail, graphql.MenuManagerResolvedItem.children
+        graphql.MenuManagerResolvedItem.inTrail, graphql.MenuManagerResolvedItem.children,
+        graphql.MenuManagerResolvedItem.promotion, graphql.MenuManagerPromotion.title,
+        graphql.MenuManagerPromotion.text, graphql.MenuManagerPromotion.imageId,
+        graphql.MenuManagerPromotion.imageAlt, graphql.MenuManagerPromotion.linkLabel,
+        graphql.MenuManagerPromotion.targetId, graphql.MenuManagerPromotion.targetPath,
+        graphql.MenuManagerPromotion.url
       node: none

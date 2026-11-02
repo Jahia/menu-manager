@@ -21,7 +21,10 @@ import java.util.regex.Pattern;
  * {"items": [{"id": "&lt;uuid, absent for a new item&gt;", "kind": "page|section|internalLink|externalLink",
  *   "label": "...", "description": "...", "style": "default|highlight|button",
  *   "page": "&lt;uuid&gt;", "includeSubpages": false, "target": "&lt;uuid&gt;", "url": "https://...",
- *   "newTab": false, "invalidLanguages": ["zh"], "children": [ ... ]}]}
+ *   "newTab": false, "invalidLanguages": ["zh"],
+ *   "promotion": {"title": "...", "text": "...", "linkLabel": "...", "imageAlt": "...", "image": "&lt;uuid&gt;",
+ *                 "target": "&lt;uuid&gt;", "url": "https://..."},
+ *   "children": [ ... ]}]}
  * </pre>
  */
 public final class MenuTree {
@@ -32,11 +35,29 @@ public final class MenuTree {
     public static final int MAX_LABEL = 200;
     /** Longest description. */
     public static final int MAX_DESCRIPTION = 1000;
+    /** Longest promotion text. */
+    public static final int MAX_PROMO_TEXT = 1000;
     /** The styles an item may take. */
     public static final Set<String> STYLES = Set.of("default", "highlight", "button");
 
     private static final Pattern UUID = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
     private static final Pattern LANGUAGE = Pattern.compile("^[a-z]{2,3}(_[A-Za-z0-9]{2,8})*$");
+
+    /**
+     * An item's promotion: every field may be null (null removes it; a promotion without a title shows nothing).
+     *
+     * @param title     the title in the saved language
+     * @param text      the text in the saved language
+     * @param linkLabel the button's label in the saved language
+     * @param imageAlt  the image's text alternative in the saved language
+     * @param image     identifier of the image
+     * @param target    identifier of the node the button opens
+     * @param url       the checked address the button opens
+     */
+    public record Promo(String title, String text, String linkLabel, String imageAlt, String image, String target, String url) {
+        /** No promotion. */
+        public static final Promo NONE = new Promo(null, null, null, null, null, null, null);
+    }
 
     /**
      * One item of the tree.
@@ -51,10 +72,11 @@ public final class MenuTree {
      * @param url              for an external link, the checked address, else null
      * @param newTab           for a link, whether it opens in a new tab
      * @param invalidLanguages languages the item is hidden in
+     * @param promo            its promotion
      * @param children         its items
      */
     public record Item(String id, MenuItemKind kind, String label, String description, String style, String reference,
-                       boolean includeSubpages, String url, boolean newTab, List<String> invalidLanguages, List<Item> children) {
+                       boolean includeSubpages, String url, boolean newTab, List<String> invalidLanguages, Promo promo, List<Item> children) {
 
         /**
          * Copies the lists, so the record stays immutable.
@@ -165,7 +187,25 @@ public final class MenuTree {
         boolean link = kind == MenuItemKind.INTERNAL_LINK || kind == MenuItemKind.EXTERNAL_LINK;
         return new Item(id, kind, label, description, style, reference,
                 kind == MenuItemKind.PAGE && o.optBoolean("includeSubpages", false), url,
-                link && o.optBoolean("newTab", false), invalid, items(o.optJSONArray("children"), depth + 1, count));
+                link && o.optBoolean("newTab", false), invalid, promo(o.optJSONObject("promotion")),
+                items(o.optJSONArray("children"), depth + 1, count));
+    }
+
+    private static Promo promo(JSONObject p) throws MenuException {
+        if (p == null) {
+            return Promo.NONE;
+        }
+        String tooLong = "Promotion field too long";
+        String image = text(p, "image");
+        String target = text(p, "target");
+        String rawUrl = text(p, "url");
+        if ((image != null && !UUID.matcher(image).matches()) || (target != null && !UUID.matcher(target).matches())) {
+            throw new MenuException(MenuException.UNREADABLE, "Promotion reference malformed");
+        }
+        String url = rawUrl == null ? null : UrlPolicy.check(rawUrl)
+                .orElseThrow(() -> new MenuException(MenuException.BAD_URL, "Promotion address not allowed"));
+        return new Promo(bounded(text(p, "title"), MAX_LABEL, tooLong), bounded(text(p, "text"), MAX_PROMO_TEXT, tooLong),
+                bounded(text(p, "linkLabel"), MAX_LABEL, tooLong), bounded(text(p, "imageAlt"), MAX_LABEL, tooLong), image, target, url);
     }
 
     private static String uuid(JSONObject o, String key, String missing) throws MenuException {

@@ -3,6 +3,9 @@ import {gql} from '@apollo/client';
 const ITEM_FIELDS = `
     id kind label fallbackLabel description fallbackDescription style includeSubpages newTab url invalidLanguages publicAccess
     target { uuid path title fallbackTitle nodeType available inLive }
+    promoTitle fallbackPromoTitle promoText promoLinkLabel promoImageAlt promoUrl
+    promoImage { uuid path title fallbackTitle nodeType available inLive }
+    promoTarget { uuid path title fallbackTitle nodeType available inLive }
 `;
 
 export const MENUS = gql`

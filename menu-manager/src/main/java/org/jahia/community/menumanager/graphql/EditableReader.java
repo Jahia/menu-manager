@@ -104,6 +104,14 @@ final class EditableReader {
             item.invalidLanguages = values(node, "j:invalidLanguages");
             String reference = kind == MenuItemKind.PAGE ? "page" : kind == MenuItemKind.INTERNAL_LINK ? "target" : null;
             item.target = reference == null ? null : target(node, reference);
+            item.promoTitle = text(node, "promoTitle");
+            item.promoText = text(node, "promoText");
+            item.promoLinkLabel = text(node, "promoLinkLabel");
+            item.promoImageAlt = text(node, "promoImageAlt");
+            item.promoUrl = text(node, "promoUrl");
+            item.fallbackPromoTitle = fallback.equals(language) ? null : text(fallbackRaw.getNodeByIdentifier(node.getIdentifier()), "promoTitle");
+            item.promoImage = target(node, "promoImage");
+            item.promoTarget = target(node, "promoTarget");
             item.children = items(node);
             all.add(item);
             out.add(item);

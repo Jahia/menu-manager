@@ -18,6 +18,20 @@ export interface Target {
     inLive: boolean;
 }
 
+/** A top-level item's promotion (mega menu); empty strings and nulls mean "none". */
+export interface Promo {
+    title: string;
+    fallbackTitle?: string | null;
+    text: string;
+    linkLabel: string;
+    imageAlt: string;
+    image: Target | null;
+    target: Target | null;
+    url: string;
+}
+
+export const NO_PROMO: Promo = {title: '', text: '', linkLabel: '', imageAlt: '', image: null, target: null, url: ''};
+
 export interface Item {
     /** Client key: the server id for a stored item, a generated one for a new item. */
     key: string;
@@ -35,6 +49,7 @@ export interface Item {
     invalidLanguages: string[];
     target?: Target | null;
     publicAccess?: boolean;
+    promo: Promo;
     children: Item[];
 }
 
@@ -66,6 +81,14 @@ export interface ServerItem {
     invalidLanguages: string[];
     target?: Target | null;
     publicAccess: boolean;
+    promoTitle?: string | null;
+    fallbackPromoTitle?: string | null;
+    promoText?: string | null;
+    promoLinkLabel?: string | null;
+    promoImageAlt?: string | null;
+    promoImage?: Target | null;
+    promoTarget?: Target | null;
+    promoUrl?: string | null;
     children?: ServerItem[];
 }
 
@@ -85,6 +108,16 @@ export const fromServer = (items: ServerItem[] = []): Item[] =>
         invalidLanguages: i.invalidLanguages ?? [],
         target: i.target ?? null,
         publicAccess: i.publicAccess,
+        promo: {
+            title: i.promoTitle ?? '',
+            fallbackTitle: i.fallbackPromoTitle,
+            text: i.promoText ?? '',
+            linkLabel: i.promoLinkLabel ?? '',
+            imageAlt: i.promoImageAlt ?? '',
+            image: i.promoImage ?? null,
+            target: i.promoTarget ?? null,
+            url: i.promoUrl ?? ''
+        },
         children: fromServer(i.children ?? [])
     }));
 
@@ -98,6 +131,16 @@ const saveItem = (i: Item): Record<string, unknown> => {
         description: i.description.trim() || null,
         style: i.style,
         invalidLanguages: i.invalidLanguages,
+        // Always sent: a tree without it clears the promotion.
+        promotion: {
+            title: i.promo.title.trim() || null,
+            text: i.promo.text.trim() || null,
+            linkLabel: i.promo.linkLabel.trim() || null,
+            imageAlt: i.promo.imageAlt.trim() || null,
+            image: i.promo.image?.uuid ?? null,
+            target: i.promo.target?.uuid ?? null,
+            url: i.promo.target ? null : i.promo.url.trim() || null
+        },
         children: i.children.map(saveItem)
     };
     if (i.id) {
@@ -313,6 +356,9 @@ export const displayLabel = (item: Item): {text: string; fallback: boolean} => {
     return {text: item.url, fallback: false};
 };
 
+/** The addresses an external link or a promotion may hold (UrlPolicy on the server). */
+export const URL_OK = /^(https?:\/\/[^\s/?#\\]+|mailto:\S+|tel:\S+)/i;
+
 /** What a save would refuse, checked before sending: the codes the server answers. */
 export const problems = (items: Item[]): string[] => {
     const out = new Set<string>();
@@ -326,7 +372,10 @@ export const problems = (items: Item[]): string[] => {
         if ((i.kind === 'page' || i.kind === 'internalLink') && !i.target?.uuid) {
             out.add('noTarget');
         }
-        if (i.kind === 'externalLink' && !/^(https?:\/\/[^\s/?#\\]+|mailto:\S+|tel:\S+)/i.test(i.url.trim())) {
+        if (i.kind === 'externalLink' && !URL_OK.test(i.url.trim())) {
+            out.add('badUrl');
+        }
+        if (!i.promo.target && i.promo.url.trim() && !URL_OK.test(i.promo.url.trim())) {
             out.add('badUrl');
         }
         walk(i.children, depth + 1);

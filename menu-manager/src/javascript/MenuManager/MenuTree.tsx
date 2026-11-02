@@ -57,6 +57,7 @@ export interface MenuTreeProps {
     fallbackLanguage: string;
     siteLanguages: string[];
     onPickTarget: (key: string, kind: Kind) => void;
+    onPickPromo: (key: string, field: 'image' | 'target') => void;
     onConfirm: (message: string, action: () => void) => void;
 }
 
@@ -65,7 +66,7 @@ export interface MenuTreeProps {
  * dragging it to the right places it under the box above (dnd-kit, the "sortable tree" pattern on a
  * flattened copy of the tree). The same moves are buttons in each item's editor, for the keyboard.
  */
-export const MenuTree = ({items, onChange, language, fallbackLanguage, siteLanguages, onPickTarget, onConfirm}: MenuTreeProps): JSX.Element => {
+export const MenuTree = ({items, onChange, language, fallbackLanguage, siteLanguages, onPickTarget, onPickPromo, onConfirm}: MenuTreeProps): JSX.Element => {
     const [activeKey, setActiveKey] = useState<string | null>(null);
     const [overKey, setOverKey] = useState<string | null>(null);
     const [offsetX, setOffsetX] = useState(0);
@@ -128,6 +129,7 @@ export const MenuTree = ({items, onChange, language, fallbackLanguage, siteLangu
                             siteLanguages={siteLanguages}
                             onChange={onChange}
                             onPickTarget={onPickTarget}
+                            onPickPromo={onPickPromo}
                             onConfirm={onConfirm}
                         />
                     ))}
@@ -155,10 +157,12 @@ interface RowProps {
     siteLanguages: string[];
     onChange: (items: Item[]) => void;
     onPickTarget: (key: string, kind: Kind) => void;
+    onPickPromo: (key: string, field: 'image' | 'target') => void;
     onConfirm: (message: string, action: () => void) => void;
 }
 
-const SortableRow = ({flat, depth, items, isOpen, onToggle, language, fallbackLanguage, siteLanguages, onChange, onPickTarget, onConfirm}: RowProps): JSX.Element => {
+const SortableRow = ({flat, depth, items, isOpen, onToggle, language, fallbackLanguage, siteLanguages, onChange, onPickTarget, onPickPromo,
+                         onConfirm}: RowProps): JSX.Element => {
     const {t} = useTranslation(NS);
     const {attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging} = useSortable({id: flat.key});
     const {item} = flat;
@@ -199,6 +203,8 @@ const SortableRow = ({flat, depth, items, isOpen, onToggle, language, fallbackLa
                         siteLanguages={siteLanguages}
                         onChange={onChange}
                         onPickTarget={onPickTarget}
+                        onPickPromo={onPickPromo}
+                        isTop={flat.depth === 0}
                         onConfirm={onConfirm}
                     />
                 )}
@@ -241,6 +247,7 @@ const RowBar = ({item, fallbackLanguage, isOpen, onToggle, handle}: RowBarProps)
                     </Tooltip>
                 )}
                 {item.kind === 'page' && item.includeSubpages && <Chip label={t('badge.subpages')} color="accent"/>}
+                {(item.promo.title || item.promo.fallbackTitle) && <Chip label={t('editor.promo.badge')} color="accent"/>}
                 {hidden.length > 0 && <Chip label={t('badge.hiddenIn', {langs: hidden.join(', ')})} color="light"/>}
                 {item.target && !item.target.available && (
                     <Tooltip label={t('badge.unavailableHelp')}>
@@ -279,11 +286,14 @@ interface EditorProps {
     siteLanguages: string[];
     onChange: (items: Item[]) => void;
     onPickTarget: (key: string, kind: Kind) => void;
+    onPickPromo: (key: string, field: 'image' | 'target') => void;
+    isTop: boolean;
     onConfirm: (message: string, action: () => void) => void;
 }
 
 /** Everything about one item, in the edited language; and the moves, for the keyboard. */
-const ItemEditor = ({item, items, language, fallbackLanguage, siteLanguages, onChange, onPickTarget, onConfirm}: EditorProps): JSX.Element => {
+const ItemEditor = ({item, items, language, fallbackLanguage, siteLanguages, onChange, onPickTarget, onPickPromo, isTop,
+                        onConfirm}: EditorProps): JSX.Element => {
     const {t} = useTranslation(NS);
     const set = (patch: Partial<Item>): void => onChange(update(items, item.key, patch));
     const id = (field: string): string => `mnu-${item.key}-${field}`;
@@ -370,6 +380,8 @@ const ItemEditor = ({item, items, language, fallbackLanguage, siteLanguages, onC
                     </div>
                 </fieldset>
             )}
+            {isTop && <PromoEditor item={item} fallbackLanguage={fallbackLanguage} onPatch={promo => set({promo: {...item.promo, ...promo}})}
+                                   onPick={field => onPickPromo(item.key, field)}/>}
             <div className={styles.editorFoot}>
                 <div className={styles.moves} role="group" aria-label={t('editor.move')}>
                     {moves.map(m => {
@@ -394,5 +406,67 @@ const ItemEditor = ({item, items, language, fallbackLanguage, siteLanguages, onC
                 />
             </div>
         </div>
+    );
+};
+
+interface PromoEditorProps {
+    item: Item;
+    fallbackLanguage: string;
+    onPatch: (patch: Partial<Item['promo']>) => void;
+    onPick: (field: 'image' | 'target') => void;
+}
+
+/** A top-level item's promotion, shown by mega menus beside its columns. */
+const PromoEditor = ({item, fallbackLanguage, onPatch, onPick}: PromoEditorProps): JSX.Element => {
+    const {t} = useTranslation(NS);
+    const {promo} = item;
+    const id = (field: string): string => `mnu-${item.key}-promo-${field}`;
+    return (
+        <fieldset className={`${styles.editorWide} ${styles.promo}`}>
+            <legend className={styles.fieldLabel}><Typography weight="bold">{t('editor.promo.title')}</Typography></legend>
+            <Typography variant="caption" className={styles.muted}>{t('editor.promo.help')}</Typography>
+            <div className={styles.promoGrid}>
+                <div>
+                    <label className={styles.fieldLabel} htmlFor={id('title')}><Typography>{t('editor.promo.promoTitle')}</Typography></label>
+                    <Input id={id('title')} value={promo.title}
+                           placeholder={promo.fallbackTitle ? t('editor.labelPlaceholderFallback', {lang: upper(fallbackLanguage), label: promo.fallbackTitle}) : ''}
+                           onChange={e => onPatch({title: e.target.value})}/>
+                </div>
+                <div>
+                    <label className={styles.fieldLabel} htmlFor={id('label')}><Typography>{t('editor.promo.linkLabel')}</Typography></label>
+                    <Input id={id('label')} value={promo.linkLabel} onChange={e => onPatch({linkLabel: e.target.value})}/>
+                </div>
+                <div className={styles.editorWide}>
+                    <label className={styles.fieldLabel} htmlFor={id('text')}><Typography>{t('editor.promo.text')}</Typography></label>
+                    <Textarea id={id('text')} value={promo.text} onChange={e => onPatch({text: e.target.value})}/>
+                </div>
+                <div>
+                    <Typography className={styles.fieldLabel}>{t('editor.promo.image')}</Typography>
+                    <div className={styles.targetLine}>
+                        {promo.image && <Typography title={promo.image.path ?? ''}>{promo.image.title}</Typography>}
+                        <Button size="small" variant="outlined" label={t('editor.promo.chooseImage')} onClick={() => onPick('image')}/>
+                        {promo.image && <Button size="small" variant="ghost" label={t('editor.promo.removeImage')} onClick={() => onPatch({image: null})}/>}
+                    </div>
+                </div>
+                <div>
+                    <label className={styles.fieldLabel} htmlFor={id('alt')}><Typography>{t('editor.promo.imageAlt')}</Typography></label>
+                    <Input id={id('alt')} value={promo.imageAlt} placeholder={t('editor.promo.imageAltHelp')} onChange={e => onPatch({imageAlt: e.target.value})}/>
+                </div>
+                <div>
+                    <Typography className={styles.fieldLabel}>{t('editor.promo.link')}</Typography>
+                    <div className={styles.targetLine}>
+                        {promo.target && <Typography title={promo.target.path ?? ''}>{promo.target.title}</Typography>}
+                        <Button size="small" variant="outlined" label={t('editor.promo.chooseLink')} onClick={() => onPick('target')}/>
+                        {promo.target && <Button size="small" variant="ghost" label={t('editor.promo.removeLink')} onClick={() => onPatch({target: null})}/>}
+                    </div>
+                </div>
+                {!promo.target && (
+                    <div>
+                        <label className={styles.fieldLabel} htmlFor={id('url')}><Typography>{t('editor.promo.url')}</Typography></label>
+                        <Input id={id('url')} value={promo.url} placeholder="https://" onChange={e => onPatch({url: e.target.value})}/>
+                    </div>
+                )}
+            </div>
+        </fieldset>
     );
 };

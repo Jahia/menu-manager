@@ -33,6 +33,19 @@
  - description (string, textarea) i18n nofulltext
  // cnd-check-ignore(missingI18n): a choice among fixed values, labelled in the resource bundles
  - itemStyle (string, choicelist[resourceBundle]) = 'default' autocreated indexed=no < 'default', 'highlight', 'button'
+ // A promotion, shown by the mega menu beside a top-level item's columns: an image, a title, a text
+ // and a button to a page or content of the platform (promoTarget) or an address (promoUrl). Without
+ // a title, a page item shows its page's own classic-templates promotion (ctplmix:navPromo), if any.
+ - promoImage (weakreference, picker[type='image']) < 'jmix:image'
+ // cnd-check-ignore(redundantImageAlt): the alternative that fits this promotion; the image's title is the default
+ - promoImageAlt (string) i18n nofulltext
+ - promoTitle (string) i18n nofulltext
+ - promoText (string, textarea) i18n nofulltext
+ - promoLinkLabel (string) i18n nofulltext
+ // cnd-check-ignore(weakrefNoConstraint): a promotion may point to any addressable node
+ - promoTarget (weakreference, picker[type='editoriallink'])
+ // cnd-check-ignore(rawStringLink): the promotion's address outside the platform, scheme constrained
+ - promoUrl (string) nofulltext indexed=no < '(https?://|mailto:|tel:).+'
  + * (mnumix:menuItem)
 
 // A page of the site. With includeSubpages, the page's own subpages (those shown in navigation)
@@ -69,5 +82,5 @@
 [mnu:navigation] > jnt:content, mix:title, mnumix:component, jmix:navMenuComponent
  - menu (weakreference, choicelist[nodes='$currentSite/menus;mnu:menu']) mandatory < 'mnu:menu'
  // cnd-check-ignore(missingI18n): a choice among fixed values, labelled in the resource bundles
- - layout (string, choicelist[resourceBundle]) = 'horizontal' autocreated indexed=no < 'horizontal', 'vertical', 'columns'
+ - layout (string, choicelist[resourceBundle]) = 'horizontal' autocreated indexed=no < 'horizontal', 'mega', 'vertical', 'columns'
  - maxDepth (long) = '3' autocreated indexed=no < '[1,3]'

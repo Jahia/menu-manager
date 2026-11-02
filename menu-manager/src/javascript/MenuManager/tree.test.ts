@@ -1,9 +1,9 @@
 import {describe, expect, it} from 'vitest';
-import {drop, flatten, fromServer, indent, Item, MAX_DEPTH, move, moveDown, moveUp, outdent, problems, projection, toSaveTree} from './tree';
+import {drop, flatten, fromServer, indent, Item, MAX_DEPTH, move, moveDown, moveUp, NO_PROMO, outdent, problems, projection, toSaveTree} from './tree';
 
 const item = (key: string, children: Item[] = [], patch: Partial<Item> = {}): Item => ({
     key, id: key, kind: 'section', label: key, description: '', style: 'default', includeSubpages: false, newTab: false,
-    url: '', invalidLanguages: [], target: null, children, ...patch
+    url: '', invalidLanguages: [], target: null, promo: NO_PROMO, children, ...patch
 });
 
 const keys = (items: Item[]): unknown[] => items.map(i => (i.children.length ? [i.key, keys(i.children)] : i.key));
@@ -66,6 +66,8 @@ describe('drag and drop', () => {
     });
 });
 
+const NONE = {title: null, text: null, linkLabel: null, imageAlt: null, image: null, target: null, url: null};
+
 describe('saving', () => {
     it('sends what each kind needs and no more', () => {
         const target = {uuid: 'u1', path: '/p', title: 'P', nodeType: 'jnt:page', available: true, inLive: true};
@@ -77,9 +79,9 @@ describe('saving', () => {
         }]);
         expect(toSaveTree(tree)).toEqual({items: [{
             id: 'i1', kind: 'page', label: 'Deals', description: null, style: 'default', invalidLanguages: ['zh'],
-            page: 'u1', includeSubpages: true, children: [{
+            page: 'u1', includeSubpages: true, promotion: NONE, children: [{
                 id: 'i2', kind: 'externalLink', label: null, description: null, style: 'button', invalidLanguages: [],
-                url: 'https://a.example', newTab: true, children: []
+                url: 'https://a.example', newTab: true, promotion: NONE, children: []
             }]
         }]});
     });
@@ -89,5 +91,6 @@ describe('saving', () => {
         expect(problems([item('s', [], {label: '', fallbackLabel: 'Travel'})])).toEqual([]);
         expect(problems([item('l', [], {kind: 'externalLink', url: 'javascript:alert(1)'})])).toEqual(['badUrl']);
         expect(problems([item('p', [], {kind: 'page'})])).toEqual(['noTarget']);
+        expect(problems([item('s', [], {promo: {...NO_PROMO, title: 'x', url: 'javascript:x'}})])).toEqual(['badUrl']);
     });
 });

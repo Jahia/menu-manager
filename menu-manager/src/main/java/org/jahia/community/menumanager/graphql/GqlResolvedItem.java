@@ -87,6 +87,12 @@ public class GqlResolvedItem {
         return item.inTrail();
     }
 
+    /** @return the promotion of a top-level item, or null */
+    @GraphQLField @GraphQLName("promotion")
+    public GqlPromotion promotion() {
+        return item.promotion() == null ? null : new GqlPromotion(item.promotion());
+    }
+
     /** @return the visible children */
     @GraphQLField @GraphQLName("children") @GraphQLNonNull
     public List<GqlResolvedItem> children() {

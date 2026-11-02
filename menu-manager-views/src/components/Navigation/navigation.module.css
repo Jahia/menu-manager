@@ -252,6 +252,138 @@
   }
 }
 
+/* ---- Mega menu: the bar above, each panel the full width of the menu ------------------------------ */
+
+.mega {
+  position: relative;
+}
+
+.mega .top {
+  position: static;
+}
+
+.megaPanel {
+  left: 0;
+  right: 0;
+  max-width: none;
+  min-width: 0;
+  padding: calc(var(--mnu-gap) * 1.5);
+  grid-template-columns: minmax(180px, 1fr) 3fr;
+  gap: calc(var(--mnu-gap) * 2);
+}
+
+/* The panel shows as a grid wherever the bar shows it as a block. */
+.horizontal:not([data-mnu-js]) .top:hover > .megaPanel,
+.horizontal:not([data-mnu-js]) .top:focus-within > .megaPanel,
+.top[data-open] > .megaPanel,
+.horizontal[data-edit] .megaPanel {
+  display: grid;
+}
+
+.megaWithPromo {
+  grid-template-columns: minmax(180px, 1fr) 3fr minmax(220px, 1.2fr);
+}
+
+.promo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mnu-gap-small);
+  padding: var(--mnu-gap);
+  border-radius: var(--mnu-radius);
+  background: var(--ctpl-color-surface-sunken, rgba(127, 127, 127, 0.08));
+}
+
+.promoImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--mnu-radius);
+}
+
+.promoTitle {
+  margin: 0;
+  font-weight: var(--mnu-heading-weight);
+  font-size: 1.1em;
+}
+
+.promoText {
+  margin: 0;
+  color: var(--mnu-muted);
+  line-height: 1.5;
+}
+
+.promoButton {
+  align-self: flex-start;
+  margin-top: var(--mnu-gap-small);
+  padding: 0.45em 1.1em;
+  border-radius: 999px;
+  background: var(--mnu-action);
+  color: var(--mnu-on-action);
+  font-weight: var(--mnu-heading-weight);
+  text-decoration: none;
+}
+
+.promoButton:hover {
+  filter: brightness(1.08);
+}
+
+.promoButton:focus-visible {
+  outline: var(--mnu-focus);
+  outline-offset: 2px;
+}
+
+.megaIntro {
+  padding-right: var(--mnu-gap);
+  border-right: 1px solid var(--mnu-border);
+}
+
+.megaTitle {
+  font-size: 1.25em;
+  font-weight: var(--mnu-heading-weight);
+}
+
+.megaDescription {
+  margin: var(--mnu-gap-small) 0 0;
+  color: var(--mnu-muted);
+  line-height: 1.5;
+}
+
+.megaColumns {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
+  gap: var(--mnu-gap) calc(var(--mnu-gap) * 1.5);
+  align-content: start;
+}
+
+.megaHead {
+  font-weight: var(--mnu-heading-weight);
+}
+
+.megaItems {
+  margin-top: var(--mnu-gap-small) !important;
+}
+
+.megaItems > .nestedItem {
+  padding: 3px 0;
+}
+
+@media (max-width: 767px) {
+  .megaPanel,
+  .megaWithPromo,
+  .top[data-open] > .megaPanel,
+  .horizontal[data-edit] .megaPanel {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--mnu-gap);
+  }
+
+  .megaIntro {
+    padding-right: 0;
+    border-right: 0;
+  }
+}
+
 /* ---- Vertical list ---------------------------------------------------------------------------- */
 
 /* Layout hooks for themes (a class with no rule is dropped by CSS modules). */

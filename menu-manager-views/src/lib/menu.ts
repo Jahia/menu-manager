@@ -1,3 +1,14 @@
+/** A top-level item's promotion (mega menu). */
+export interface Promotion {
+  title: string;
+  text?: string | null;
+  imageId?: string | null;
+  imageAlt?: string | null;
+  linkLabel?: string | null;
+  targetId?: string | null;
+  url?: string | null;
+}
+
 /** One item of a menu as menuManager.resolvedMenu returns it. */
 export interface MenuItem {
   id: string;
@@ -10,6 +21,7 @@ export interface MenuItem {
   newTab: boolean;
   current: boolean;
   inTrail: boolean;
+  promotion?: Promotion | null;
   children: MenuItem[];
 }
 
@@ -33,7 +45,7 @@ export const RESOLVED_MENU = `
     menuManager {
       resolvedMenu(menu: $menu, language: $language, workspace: $workspace, currentPath: $currentPath, maxDepth: $maxDepth) {
         id title dependencies
-        items { ${ITEM} children { ${ITEM} children { ${ITEM} } } }
+        items { ${ITEM} promotion { title text imageId imageAlt linkLabel targetId url } children { ${ITEM} children { ${ITEM} } } }
       }
     }
   }

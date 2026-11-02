@@ -141,6 +141,32 @@ class MenuResolverImplTest {
                 .containsExactly("優惠", "Latest news");
     }
 
+    @Test
+    void aTopLevelItemCarriesItsPromotionElseItsPagesOne() throws RepositoryException {
+        JCRNodeWrapper image = node("img", "/sites/s/files/kits.jpg", "jnt:file").build();
+        JCRNodeWrapper offers = node("p1", "/sites/s/home/offers", "jnt:page").prop("jcr:title", "Offers").build();
+        JCRNodeWrapper about = node("p2", "/sites/s/home/about", "jnt:page").prop("jcr:title", "About")
+                .prop("promoTitle", "Our story").prop("promoText", "Since 1938").prop("ctaLabel", "Read").ref("promoLink", offers)
+                .extraType(MenuResolverImpl.PAGE_PROMOTION).build();
+        JCRNodeWrapper own = node("i1", "/sites/s/menus/main/a", "mnu:sectionItem").prop("label", "Products")
+                .prop("promoTitle", "New kits").prop("promoUrl", "https://shop.example").ref("promoImage", image).brokenRef("promoTarget")
+                .child(node("c", "/sites/s/menus/main/a/c", "mnu:pageItem").ref("page", offers).prop("promoTitle", "Never shown").build())
+                .build();
+        JCRNodeWrapper fromPage = node("i2", "/sites/s/menus/main/b", "mnu:pageItem").ref("page", about).build();
+        JCRNodeWrapper menu = node("m", "/sites/s/menus/main", "mnu:menu").child(own).child(fromPage).build();
+
+        List<ResolvedItem> items = resolve(menu, "en", null, 3);
+
+        assertThat(items.get(0).promotion().title()).isEqualTo("New kits");
+        assertThat(items.get(0).promotion().imageId()).isEqualTo("img");
+        assertThat(items.get(0).promotion().targetId()).as("an unreadable link is left out, the address takes over").isNull();
+        assertThat(items.get(0).promotion().url()).isEqualTo("https://shop.example");
+        assertThat(items.get(0).children().get(0).promotion()).as("promotions are for top-level items").isNull();
+        assertThat(items.get(1).promotion().title()).isEqualTo("Our story");
+        assertThat(items.get(1).promotion().linkLabel()).isEqualTo("Read");
+        assertThat(items.get(1).promotion().targetPath()).isEqualTo("/sites/s/home/offers");
+    }
+
     private MenuResolverImpl.FallbackLookup fallback;
 
     private List<ResolvedItem> resolve(JCRNodeWrapper menu, String language, String currentPath, int depth) throws RepositoryException {
@@ -203,6 +229,12 @@ class MenuResolverImplTest {
             JCRPropertyWrapper p = mock(JCRPropertyWrapper.class);
             when(p.getNode()).thenThrow(new ItemNotFoundException("gone or not readable"));
             return set(name, p);
+        }
+
+        NodeBuilder extraType(String extra) throws RepositoryException {
+            String primary = node.getPrimaryNodeTypeName();
+            when(node.isNodeType(anyString())).thenAnswer(a -> a.getArgument(0).equals(primary) || a.getArgument(0).equals(extra));
+            return this;
         }
 
         NodeBuilder displayable(String name) {

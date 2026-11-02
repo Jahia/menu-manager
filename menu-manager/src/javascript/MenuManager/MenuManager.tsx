@@ -28,7 +28,7 @@ import {MenuSettings, Placement} from './MenuSettings';
 import {MenuTree} from './MenuTree';
 import {Preview} from './Preview';
 import {CREATE_MENU, DELETE_MENU, DUPLICATE_MENU, EDITABLE_MENU, MENUS, NODE_BY_PATH, PUBLISH, SAVE_MENU, UPDATE_MENU} from './graphql';
-import {count, fromServer, Item, Kind, problems, Target, toSaveTree, update} from './tree';
+import {count, find, fromServer, Item, Kind, problems, Target, toSaveTree, update} from './tree';
 import styles from './MenuManager.module.css';
 
 interface MenuSummary {
@@ -199,9 +199,9 @@ export const MenuManager = ({siteKey}: {siteKey: string}): JSX.Element => {
     });
 
     /** Jahia's content picker, then the chosen node's identifier and title in the edited language. */
-    const pickContent = (kind: Kind | 'page' | 'internalLink', onPicked: (target: Target) => void): void => {
+    const pickContent = (kind: Kind | 'image', onPicked: (target: Target) => void): void => {
         window.CE_API?.openPicker?.({
-            type: kind === 'page' ? 'page' : 'editoriallink',
+            type: kind === 'page' ? 'page' : kind === 'image' ? 'image' : 'editoriallink',
             isMultiple: false,
             site: siteKey,
             lang: language,
@@ -219,6 +219,13 @@ export const MenuManager = ({siteKey}: {siteKey: string}): JSX.Element => {
             }
         });
     };
+
+    const onPickPromo = (key: string, field: 'image' | 'target'): void =>
+        pickContent(field === 'image' ? 'image' : 'internalLink', picked => setItems(current => {
+            const item = find(current, key);
+            setDirty(true);
+            return item ? update(current, key, {promo: {...item.promo, [field]: picked}}) : current;
+        }));
 
     const onPickTarget = (key: string, kind: Kind): void =>
         pickContent(kind === 'page' ? 'page' : 'internalLink', target => change(update(items, key, {target})));
@@ -318,6 +325,7 @@ export const MenuManager = ({siteKey}: {siteKey: string}): JSX.Element => {
                                         fallbackLanguage={menu?.effectiveFallbackLanguage ?? language}
                                         siteLanguages={languages}
                                         onPickTarget={onPickTarget}
+                                        onPickPromo={onPickPromo}
                                         onConfirm={(message, action) => setConfirm({message, action})}
                                     />
                                 )}

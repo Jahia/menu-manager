@@ -38,6 +38,25 @@ class MenuTreeTest {
     }
 
     @Test
+    void readsAPromotionAndChecksIt() throws MenuException {
+        MenuTree tree = MenuTree.parse("""
+                {"items": [{"kind": "section", "label": "Products", "promotion": {"title": " New kits ", "text": "Out now",
+                  "linkLabel": "See", "image": "%s", "target": "%s", "url": null}}]}
+                """.formatted(PAGE, ITEM));
+        MenuTree.Promo promo = tree.items().get(0).promo();
+        assertThat(promo.title()).isEqualTo("New kits");
+        assertThat(promo.image()).isEqualTo(PAGE);
+        assertThat(promo.target()).isEqualTo(ITEM);
+        assertThat(promo.url()).isNull();
+        assertThat(MenuTree.parse("{\"items\": [{\"kind\": \"section\", \"label\": \"x\"}]}").items().get(0).promo())
+                .isEqualTo(MenuTree.Promo.NONE);
+        assertCode("{\"items\": [{\"kind\": \"section\", \"label\": \"x\", \"promotion\": {\"url\": \"javascript:x\"}}]}",
+                MenuException.BAD_URL);
+        assertCode("{\"items\": [{\"kind\": \"section\", \"label\": \"x\", \"promotion\": {\"image\": \"../etc\"}}]}",
+                MenuException.UNREADABLE);
+    }
+
+    @Test
     void anEmptyTreeIsAnEmptyMenu() throws MenuException {
         assertThat(MenuTree.parse("{}").count()).isZero();
         assertThat(MenuTree.parse("{\"items\": []}").items()).isEmpty();

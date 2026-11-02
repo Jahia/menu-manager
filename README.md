@@ -22,15 +22,32 @@ Menus built by hand in jContent, independent of the page tree, for Jahia 8.2.
    items to order and nest them (or use each item's Move links); translate the labels by switching
    the language; **Save**, then **Publish**.
 3. Add the **Menu** component to a page (a Free zone on a classic-templates site), choose the menu,
-   its layout (horizontal bar with dropdowns, vertical list, columns), the levels shown and its
-   accessible name.
+   its layout, the levels shown and its accessible name.
+
+## Layouts
+
+| Layout | What it draws |
+|---|---|
+| Horizontal bar | Top-level items in a bar; an item with children opens a dropdown panel (button, Escape, click outside; hover and focus without JavaScript); a **Menu** button under 768 px |
+| Mega menu | The same bar; each panel takes the menu's full width: the item and its description, one column per child with its own items, and the item's **promotion** |
+| Vertical list | Every level nested |
+| Columns | Top-level items as columns (a footer) |
+
+## Promotions
+
+A top-level item can carry a promotion, shown by the mega menu beside its columns: an image (with its
+own text alternative, else the image's title), a title, a text and a button to a page or content of
+the platform, or to an address. It is written in the Menus screen (the item's **Promotion** section),
+per language like the labels. Without a title of its own, a page item shows its page's
+classic-templates **Menu promotion** (`ctplmix:navPromo`) when the page has one, so promotions written
+on pages keep working.
 
 ## Modules
 
 | Module | What it does |
 |---|---|
 | `menu-manager` | Content types, the resolver, the GraphQL API, the visitor API scope, the `manageMenus` permission, the jContent Menus screen |
-| `menu-manager-views` | The views of the Menu component (`mnu:navigation`): horizontal bar with dropdowns, vertical list, columns |
+| `menu-manager-views` | The views of the Menu component (`mnu:navigation`): horizontal bar, mega menu, vertical list, columns |
 
 ## Theming
 

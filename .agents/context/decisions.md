@@ -58,3 +58,11 @@
 | Tokens | `--mnu-*`, defaulting to the classic-templates tokens, then neutral values |
 | Placement today | classic-templates areas refuse it until phase 5; its Free zone accepts it |
 | Trap | The query's third level selects no `children`: the view normalises every level to a list (a first render failed with `Cannot read property 'some' of undefined`, a 500 for the whole page) |
+
+## 2026-11-02: mega menu and promotions (user)
+
+| Topic | Decision |
+|---|---|
+| Mega menu | A fourth layout (`mega`, added to the `layout` choice list: a widening, installed as a minor change): the horizontal bar's behaviour, each panel the full width of the menu with the item's intro, one column per child, and the promotion |
+| Promotion (user asked whether it is page-level) | On the **menu item** (`promo*` properties of `mnumix:menuItem`, top-level items only, edited in the Menus screen, per language): a custom menu points to any page or to a section with no page. A page item without a promotion title of its own shows its page's classic-templates `ctplmix:navPromo` (`promoTitle`, `promoText`, `image`, `imageAlt`, `ctaLabel`, `promoLink`, `promoUrl`), read only when that type exists, so promotions already written on pages keep working and nothing depends on classic-templates |
+| Access | The promotion's image and link are read with the visitor's session: one the visitor may not read is left out (the button then falls back to the address, else the item's link); both are cache dependencies |

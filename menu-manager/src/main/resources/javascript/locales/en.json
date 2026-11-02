@@ -95,7 +95,24 @@
       "down": "Down one",
       "under": "Under {{label}}",
       "out": "Out from under {{label}}",
-      "toTop": "To the top"
+      "toTop": "To the top",
+      "promo": {
+        "title": "Promotion",
+        "help": "Shown in mega menus beside this item's columns. Without a title, a page item shows its page's own promotion, if it has one.",
+        "promoTitle": "Title",
+        "text": "Text",
+        "image": "Image",
+        "chooseImage": "Choose an image",
+        "removeImage": "Remove image",
+        "imageAlt": "Image text alternative",
+        "imageAltHelp": "What the image shows; its title in the media library is used when empty.",
+        "linkLabel": "Button label",
+        "link": "Button link",
+        "chooseLink": "Choose content",
+        "removeLink": "Remove link",
+        "url": "Or an address",
+        "badge": "Promotion"
+      }
     },
     "settings": {
       "title": "Menu settings",

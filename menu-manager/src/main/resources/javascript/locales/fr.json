@@ -95,7 +95,24 @@
       "down": "Descendre d'un cran",
       "under": "Sous {{label}}",
       "out": "Sortir de sous {{label}}",
-      "toTop": "Tout en haut"
+      "toTop": "Tout en haut",
+      "promo": {
+        "title": "Promotion",
+        "help": "Affichée dans les méga-menus à côté des colonnes de cet élément. Sans titre, un élément page affiche la promotion de sa page, s'il en a une.",
+        "promoTitle": "Titre",
+        "text": "Texte",
+        "image": "Image",
+        "chooseImage": "Choisir une image",
+        "removeImage": "Retirer l'image",
+        "imageAlt": "Texte alternatif de l'image",
+        "imageAltHelp": "Ce que montre l'image ; son titre dans la médiathèque est utilisé si vide.",
+        "linkLabel": "Libellé du bouton",
+        "link": "Lien du bouton",
+        "chooseLink": "Choisir un contenu",
+        "removeLink": "Retirer le lien",
+        "url": "Ou une adresse",
+        "badge": "Promotion"
+      }
     },
     "settings": {
       "title": "Réglages du menu",
