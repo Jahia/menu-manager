@@ -1,0 +1,21 @@
+# Pages of a site may resolve a menu for their visitor: menuManager.resolvedMenu and the fields of what
+# it returns, nothing else of the module (the Menus screen's fields stay closed to visitors and check
+# the manageMenus permission themselves). The resolver runs with the visitor's own rights, so this
+# opens nothing the visitor could not read. Every field is checked on its own, with no node: each one
+# is listed. Owned by the module (no "default configuration" marker): an update reaches every instance.
+menu-manager_resolve:
+  description: Pages of a site may resolve a Menu Manager menu for their visitor
+  auto_apply:
+    - origin: hosted
+  grants:
+    - api: graphql.Query.menuManager, graphql.MenuManagerQuery.resolvedMenu,
+        graphql.MenuManagerResolvedMenu.id, graphql.MenuManagerResolvedMenu.path,
+        graphql.MenuManagerResolvedMenu.title, graphql.MenuManagerResolvedMenu.language,
+        graphql.MenuManagerResolvedMenu.items, graphql.MenuManagerResolvedMenu.dependencies,
+        graphql.MenuManagerResolvedItem.id, graphql.MenuManagerResolvedItem.kind,
+        graphql.MenuManagerResolvedItem.label, graphql.MenuManagerResolvedItem.description,
+        graphql.MenuManagerResolvedItem.style, graphql.MenuManagerResolvedItem.targetId,
+        graphql.MenuManagerResolvedItem.targetPath, graphql.MenuManagerResolvedItem.url,
+        graphql.MenuManagerResolvedItem.newTab, graphql.MenuManagerResolvedItem.current,
+        graphql.MenuManagerResolvedItem.inTrail, graphql.MenuManagerResolvedItem.children
+      node: none

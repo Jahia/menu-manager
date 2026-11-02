@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>jahia-modules</artifactId>
+        <groupId>org.jahia.modules</groupId>
+        <version>8.2.0.0</version>
+    </parent>
+    <groupId>org.jahia.community</groupId>
+    <artifactId>menu-manager-root</artifactId>
+    <name>Menu Manager (root)</name>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <description>Menus built by hand, independent of the page tree: a jContent screen to create menus of pages, sections, internal and external links, ordered by drag and drop and translated with a fallback language, and a component that places a menu on a page.</description>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git@github.com:Jahia/menu-manager.git</connection>
+        <developerConnection>scm:git:git@github.com:Jahia/menu-manager.git</developerConnection>
+        <url>https://github.com/Jahia/menu-manager</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <!-- The Java bundle (content types, resolver, GraphQL, the jContent Menus screen). The JavaScript
+         module with the views of the menu component (menu-manager-views) joins in phase 4. -->
+    <modules>
+        <module>menu-manager</module>
+    </modules>
+
+    <repositories>
+        <repository>
+            <id>jahia-public</id>
+            <name>Jahia Public Repository</name>
+            <url>https://devtools.jahia.com/nexus/content/groups/public</url>
+            <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+        <repository>
+            <id>jahia-releases-archives</id>
+            <name>Jahia Releases Archive</name>
+            <url>https://archives-devtools.jahia.com/jahia-releases</url>
+            <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+        <repository>
+            <id>jahia-thirdparty-archives</id>
+            <name>Jahia Third-Party Releases Archive</name>
+            <url>https://archives-devtools.jahia.com/thirdparty-releases</url>
+            <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jahia-public</id>
+            <name>Jahia Public Repository</name>
+            <url>https://devtools.jahia.com/nexus/content/groups/public</url>
+            <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>jahia-releases-archives</id>
+            <name>Jahia Releases Archive</name>
+            <url>https://archives-devtools.jahia.com/jahia-releases</url>
+            <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>jahia-thirdparty-archives</id>
+            <name>Jahia Third-Party Releases Archive</name>
+            <url>https://archives-devtools.jahia.com/thirdparty-releases</url>
+            <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+</project>

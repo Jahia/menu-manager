@@ -1,0 +1,10 @@
+node_modules/
+target/
+src/main/resources/javascript/apps/
+.DS_Store
+*.iml
+.idea/
+node/
+.vscode/
+dist/
+.yarn/

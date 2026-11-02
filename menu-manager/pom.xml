@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>menu-manager-root</artifactId>
+        <groupId>org.jahia.community</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>menu-manager</artifactId>
+    <name>Menu Manager</name>
+    <packaging>bundle</packaging>
+    <description>Menus built by hand: their content types, the resolver that turns a menu into what one visitor may see in one language, its GraphQL API and the jContent Menus screen.</description>
+
+    <properties>
+        <!-- jcontent hosts the Menus screen; graphql-dxm-provider serves the menu queries and mutations. -->
+        <jahia-depends>default,jcontent=[3.7,4),graphql-dxm-provider</jahia-depends>
+        <jahia-module-type>module</jahia-module-type>
+        <!-- The 8.2 parent sets <source>11</source> on the compiler plugin: release takes precedence. -->
+        <maven.compiler.release>17</maven.compiler.release>
+        <skipTests>false</skipTests>
+        <graphql-dxm-provider.version>3.5.1</graphql-dxm-provider.version>
+        <graphql-java-annotations.version>21.1</graphql-java-annotations.version>
+    </properties>
+
+    <dependencies>
+        <!-- Jahia's own classes without the ~310 libraries jahia-impl depends on; the APIs this module
+             compiles against are declared below at the versions jahia-impl 8.2.0.0 uses. The parent
+             declares jahia-impl too; this declaration replaces it. -->
+        <dependency>
+            <groupId>org.jahia.server</groupId>
+            <artifactId>jahia-impl</artifactId>
+            <version>8.2.0.0</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.jahia.server</groupId>
+            <artifactId>jahia-api</artifactId>
+            <version>8.2.0.0</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>javax.jcr</groupId>
+            <artifactId>jcr</artifactId>
+            <version>2.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.cmpn</artifactId>
+            <version>7.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20231013</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jahia.modules</groupId>
+            <artifactId>graphql-dxm-provider</artifactId>
+            <version>${graphql-dxm-provider.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.github.graphql-java</groupId>
+            <artifactId>graphql-java-annotations</artifactId>
+            <version>${graphql-java-annotations.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.graphql-java</groupId>
+            <artifactId>graphql-java</artifactId>
+            <version>21.5</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Jahia exports it at run time; the tests alone declare it. -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>6.1.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.25.3</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- JCRNodeWrapper's signatures name commons-lang 2 types; Mockito instruments the whole hierarchy. -->
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Mockito 5 (inline mock maker by default): the resolver and the save service are tested
+             against mocked JCR nodes and sessions. -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.11.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>5.24.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-Name>Menu Manager</Bundle-Name>
+                        <_dsannotations>*</_dsannotations>
+                        <Export-Package>org.jahia.community.menumanager.model,org.jahia.community.menumanager.service.spi</Export-Package>
+                        <!-- Named explicitly: the GraphQL packages come from graphql-dxm-provider, whose
+                             transitive dependencies are excluded, so the bundle plugin would not infer them.
+                             The first line keeps the parent's (the JSP tag libraries). -->
+                        <Import-Package>
+                            ${jahia.plugin.projectPackageImport},
+                            org.jahia.modules.graphql.provider.dxm,
+                            org.jahia.modules.graphql.provider.dxm.osgi.annotations,
+                            graphql.annotations.annotationTypes,
+                            *
+                        </Import-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>

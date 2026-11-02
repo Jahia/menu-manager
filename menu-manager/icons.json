@@ -1,0 +1,14 @@
+{
+  "ink": "#22437d",
+  "out": "src/main/resources/icons",
+  "icons": {
+    "mnumix:component": "menu",
+    "mnu:navigation": "panel-top",
+    "mnu:menus": "folder-tree",
+    "mnu:menu": "list-tree",
+    "mnu:pageItem": "file-text",
+    "mnu:sectionItem": "heading",
+    "mnu:internalLinkItem": "link",
+    "mnu:externalLinkItem": "external-link"
+  }
+}

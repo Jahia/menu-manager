@@ -1,0 +1,73 @@
+<jnt = 'http://www.jahia.org/jahia/nt/1.0'>
+<jmix = 'http://www.jahia.org/jahia/mix/1.0'>
+<mix = 'http://www.jcp.org/jcr/mix/1.0'>
+<mnu = 'http://www.jahia.org/community/menu-manager/nt/1.0'>
+<mnumix = 'http://www.jahia.org/community/menu-manager/mix/1.0'>
+
+// ---- Menus ---------------------------------------------------------------------------------------
+// A site's menus live in /sites/<site>/menus (the site node accepts any child), created by the Menus
+// screen of jContent. None of these types is droppable: they never show in "New content" or in a
+// content folder, and are edited from the Menus screen only.
+
+// The container of a site's menus, in the order the Menus screen lists them.
+[mnu:menus] > jnt:content orderable
+ + * (mnu:menu)
+
+// One menu: a tree of items, three levels deep at most (the save API refuses a fourth). Its labels
+// are translated item by item; a label missing in a language is read in the fallback language, the
+// site's default language when none is set.
+// revision counts the saves of the Menus screen: a save that names an older revision is refused, so
+// two editors never overwrite each other's work unknowingly.
+[mnu:menu] > jnt:content, mix:title orderable
+ - fallbackLanguage (string) nofulltext indexed=no
+ - revision (long) = '0' autocreated hidden indexed=no
+ + * (mnumix:menuItem)
+
+// ---- Items ---------------------------------------------------------------------------------------
+
+// What every item has: an optional label (a page item shows its page's title without one), a
+// description (shown by layouts that have room for it, a mega menu column), a style chosen from a
+// list, and its own items. Visibility per language is Jahia's j:invalidLanguages (jmix:i18n).
+[mnumix:menuItem] mixin
+ - label (string) i18n nofulltext
+ - description (string, textarea) i18n nofulltext
+ // cnd-check-ignore(missingI18n): a choice among fixed values, labelled in the resource bundles
+ - itemStyle (string, choicelist[resourceBundle]) = 'default' autocreated indexed=no < 'default', 'highlight', 'button'
+ + * (mnumix:menuItem)
+
+// A page of the site. With includeSubpages, the page's own subpages (those shown in navigation)
+// follow under it, down to the menu's depth limit, so new pages appear without editing the menu.
+[mnu:pageItem] > jnt:content, mnumix:menuItem orderable
+ - page (weakreference, picker[type='page']) mandatory < 'jnt:page'
+ - includeSubpages (boolean) = 'false' autocreated indexed=no
+
+// A heading with no link: groups the items under it (a column title in a mega menu).
+[mnu:sectionItem] > jnt:content, mnumix:menuItem orderable
+
+// A link to any content the site can address: a page of another site, a news item, a file.
+[mnu:internalLinkItem] > jnt:content, mnumix:menuItem orderable
+ // cnd-check-ignore(weakrefNoConstraint): an internal link may point to any addressable node
+ - target (weakreference, picker[type='editorial']) mandatory
+ - newTab (boolean) = 'false' autocreated indexed=no
+
+// A link outside the site. The constraint keeps the address to the schemes a menu may link to, for
+// every writer (GraphQL, REST, imports); the save API and the views check it again.
+[mnu:externalLinkItem] > jnt:content, mnumix:menuItem orderable
+ // cnd-check-ignore(rawStringLink): this item type is the link; its scheme is constrained below
+ - url (string) mandatory nofulltext indexed=no < '(https?://|mailto:|tel:).+'
+ - newTab (boolean) = 'false' autocreated indexed=no
+
+// ---- Placing a menu on a page --------------------------------------------------------------------
+
+// Category of the content pickers ("Menus") for the module's droppable types.
+[mnumix:component] > jmix:droppableContent mixin
+
+// Shows one menu of the site. jmix:navMenuComponent is Jahia's marker of navigation components: a
+// template set whose areas accept it (classic-templates) takes this component without depending on
+// this module. jcr:title is the menu's accessible name (the <nav> label), never shown. Rendered by
+// the menu-manager-views module.
+[mnu:navigation] > jnt:content, mix:title, mnumix:component, jmix:navMenuComponent
+ - menu (weakreference, choicelist[nodes='$currentSite/menus;mnu:menu']) mandatory < 'mnu:menu'
+ // cnd-check-ignore(missingI18n): a choice among fixed values, labelled in the resource bundles
+ - layout (string, choicelist[resourceBundle]) = 'horizontal' autocreated indexed=no < 'horizontal', 'vertical', 'columns'
+ - maxDepth (long) = '3' autocreated indexed=no < '[1,3]'
