@@ -15,7 +15,7 @@
     <artifactId>menu-manager-views</artifactId>
     <name>Menu Manager views</name>
     <packaging>pom</packaging>
-    <description>The views of the Menu Manager component: a horizontal bar with dropdowns, a vertical list, columns.</description>
+    <description>The views of the Menu Manager component, one per layout: a horizontal bar with dropdowns (default), a mega menu, a vertical list, columns.</description>
 
     <properties>
         <sonar.sources>src,static,package.json,pom.xml</sonar.sources>

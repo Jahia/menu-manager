@@ -42,6 +42,9 @@ public class GqlMenuManagerMutation {
      * @param language language of the title
      * @return the new menu
      */
+    // manageMenus is a site permission, checked on the site by MenuAccess (tests/authorization.spec.ts):
+    // @GraphQLRequiresPermission would check it on the server root and refuse site administrators.
+    // nosemgrep: jahia-graphql-admin-no-permission
     @GraphQLField
     @GraphQLName("createMenu")
     @GraphQLNonNull
@@ -69,6 +72,9 @@ public class GqlMenuManagerMutation {
      * @param fallbackLanguage the fallback language, empty for the site's default, or null to keep it
      * @return true once saved
      */
+    // manageMenus is a site permission, checked on the site by MenuAccess (tests/authorization.spec.ts):
+    // @GraphQLRequiresPermission would check it on the server root and refuse site administrators.
+    // nosemgrep: jahia-graphql-admin-no-permission
     @GraphQLField
     @GraphQLName("updateMenu")
     @GraphQLNonNull
@@ -122,6 +128,9 @@ public class GqlMenuManagerMutation {
      * @param path path of the menu
      * @return true once removed from the default workspace
      */
+    // manageMenus is a site permission, checked on the site by MenuAccess (tests/authorization.spec.ts):
+    // @GraphQLRequiresPermission would check it on the server root and refuse site administrators.
+    // nosemgrep: jahia-graphql-admin-no-permission
     @GraphQLField
     @GraphQLName("deleteMenu")
     @GraphQLNonNull

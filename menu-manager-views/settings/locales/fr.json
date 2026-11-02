@@ -9,6 +9,8 @@
     "noMenu": "Choisissez un menu dans les réglages de ce composant : d'ici là, les visiteurs ne voient rien ici.",
     "unreadable": "Le menu choisi n'existe plus, ou vous ne pouvez pas le lire : les visiteurs ne voient rien ici.",
     "empty": "Le menu {{title}} n'a encore rien à afficher dans cette langue. Construisez-le dans jContent > Menus.",
-    "info": "Menu {{title}}, construit dans jContent > Menus. Sur le site, les visiteurs ne voient pas les éléments qu'ils ne peuvent pas lire."
+    "info": "Menu {{title}}, construit dans jContent > Menus. Sur le site, les visiteurs ne voient pas les éléments qu'ils ne peuvent pas lire.",
+    "editMenu": "Modifier ce menu",
+    "openMenus": "Ouvrir jContent > Menus"
   }
 }

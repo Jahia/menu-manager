@@ -100,7 +100,14 @@ describe('Menu Manager - authorization', () => {
     it('refuses a path that is not a menu, as a missing one', () => {
         gql(admin, fields.editableMenu, {path: `/sites/${siteKey}/home`}).then(body => assertRefused(body, ['menuManager', 'editableMenu']));
         gql(admin, fields.deleteMenu, {path: `/sites/${siteKey}/menus/../home`}).then(body => assertRefused(body, ['menuManager', 'deleteMenu']));
+        // "." and ".." name the menus container and the site node: refused by the path, not only by the type check
+        [`/sites/${siteKey}/menus/.`, `/sites/${siteKey}/menus/..`].forEach(path => {
+            gql(admin, fields.deleteMenu, {path}).then(body => assertRefused(body, ['menuManager', 'deleteMenu']));
+            gql(admin, fields.editableMenu, {path}).then(body => assertRefused(body, ['menuManager', 'editableMenu']));
+        });
         nodeExists(`/sites/${siteKey}/home`).should('eq', true);
+        nodeExists(`/sites/${siteKey}/menus`).should('eq', true);
+        nodeExists(`/sites/${siteKey}`).should('eq', true);
     });
 
     it('refuses a guest the Menus screen, and opens resolvedMenu only', () => {

@@ -23,7 +23,8 @@ final class MenuAccess {
 
     static final String DENIED = "Permission denied";
     private static final Pattern SITE_KEY = Pattern.compile("^[A-Za-z0-9_-]{1,64}$");
-    private static final Pattern MENU_PATH = Pattern.compile("^/sites/([A-Za-z0-9_-]{1,64})/" + MenuStore.CONTAINER + "/[^/]{1,255}$");
+    // A menu's own name: never "." or "..", which resolve to the container and to the site node
+    private static final Pattern MENU_PATH = Pattern.compile("^/sites/([A-Za-z0-9_-]{1,64})/" + MenuStore.CONTAINER + "/(?!\\.{1,2}$)[^/]{1,255}$");
     private static final Pattern LANGUAGE = Pattern.compile("^[a-z]{2,3}(_[A-Za-z0-9]{2,8})*$");
 
     private MenuAccess() {

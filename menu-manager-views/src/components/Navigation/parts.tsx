@@ -9,7 +9,7 @@ import classes from "./navigation.module.css";
 
 /**
  * What the views of mnu:navigation share. Not a view: each layout is a view of its own, one file
- * each (default = horizontal bar, mega, vertical, columns), chosen by the editor in Layout > View
+ * each (default = horizontal bar, mega, vertical, columns), chosen by the editor in Layout > Select a view
  * (j:view); they all resolve the menu here and draw items with the parts below.
  */
 
@@ -55,13 +55,33 @@ export type Menu =
       promoLink: (item: MenuItem) => string | undefined;
     };
 
-/** A note shown in edit mode only (never preview or live). */
-const Note = ({ edit, text }: { edit: boolean; text: string }) =>
+/**
+ * A note shown in edit mode only (never preview or live), with a link that opens the menu in
+ * jContent > Menus for the whole window (the edit frame is an iframe).
+ */
+const Note = ({ edit, text, link }: { edit: boolean; text: string; link?: { href: string; label: string } }) =>
   edit ? (
     <p className={classes.note} role="note" data-testid="mnu-note">
       {text}
+      {link && (
+        <>
+          {" "}
+          <a href={link.href} target="_top" className={classes.noteLink} data-testid="mnu-edit-link">
+            {link.label}
+          </a>
+        </>
+      )}
     </p>
   ) : null;
+
+/**
+ * jContent's Menus screen on a site and language, opened on one menu when given: the path of
+ * jContent's own route, after the context path. Edit mode only, so the address of the request never
+ * reaches a fragment visitors are served.
+ */
+const menusScreen = (renderContext: RenderContext, siteKey: string, language: string, menuPath?: string): string =>
+  `${renderContext.getRequest().getContextPath()}/jahia/jcontent/${encodeURIComponent(siteKey)}/${encodeURIComponent(language)}/apps/menuManager` +
+  (menuPath ? `?menu=${encodeURIComponent(menuPath)}` : "");
 
 /**
  * Resolves the component's menu for the visitor (menuManager.resolvedMenu): items and targets the
@@ -72,14 +92,20 @@ const Note = ({ edit, text }: { edit: boolean; text: string }) =>
 export const useMenu = ({ "jcr:title": title, menu: menuNode, maxDepth }: Props, { currentNode, currentResource, renderContext, jcrSession }: ViewContext): Menu => {
   const { t } = useTranslation(NS);
   const edit = renderContext.isEditMode();
+  const language = currentResource.getLocale().toString();
+  // The menu's own site (a menu can come from another site), else the page's
+  const siteKey = (menuNode ?? renderContext.getMainResource().getNode()).getResolveSite().getSiteKey();
+  const link = edit
+    ? { href: menusScreen(renderContext, siteKey, language, menuNode?.getPath()), label: t(menuNode ? "edit.editMenu" : "edit.openMenus") }
+    : undefined;
   if (!menuNode) {
-    return { ready: false, note: <Note edit={edit} text={t("edit.noMenu")} /> };
+    return { ready: false, note: <Note edit={edit} text={t("edit.noMenu")} link={link} /> };
   }
   const { data, errors } = useGQLQuery({
     query: RESOLVED_MENU,
     variables: {
       menu: menuNode.getIdentifier(),
-      language: currentResource.getLocale().toString(),
+      language,
       workspace: renderContext.getWorkspace() === "live" ? "LIVE" : "EDIT",
       currentPath: renderContext.getMainResource().getNode().getPath(),
       maxDepth: depthOf(maxDepth),
@@ -95,7 +121,7 @@ export const useMenu = ({ "jcr:title": title, menu: menuNode, maxDepth }: Props,
   const menuTitle = menu.title ?? "";
   const items = normalize(menu.items);
   if (items.length === 0) {
-    return { ready: false, note: <Note edit={edit} text={t("edit.empty", { title: menuTitle })} /> };
+    return { ready: false, note: <Note edit={edit} text={t("edit.empty", { title: menuTitle })} link={link} /> };
   }
 
   const href = (item: MenuItem): string | undefined => {
@@ -118,7 +144,7 @@ export const useMenu = ({ "jcr:title": title, menu: menuNode, maxDepth }: Props,
     base: `mnu-${currentNode.getIdentifier()}`,
     edit,
     links: { href, newTab: t("nav.newTab") },
-    info: <Note edit={edit} text={t("edit.info", { title: menuTitle })} />,
+    info: <Note edit={edit} text={t("edit.info", { title: menuTitle })} link={link} />,
     styles: <AddResources type="css" resources={buildModuleFileUrl("dist/assets/style.css")} />,
     script: edit ? null : <AddResources type="javascript" resources={buildModuleFileUrl("static/js/menu-manager.js")} key="mnu-script" />,
     image: (imageId, alt) => {

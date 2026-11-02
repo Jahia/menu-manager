@@ -4,7 +4,7 @@
 
 | Topic | Decision |
 |---|---|
-| Name | `menu-manager`, prefix `mnu` / `mnumix` (free on the local stack and the Molex cloud) |
+| Name | `menu-manager`, prefix `mnu` / `mnumix` (free on the local stack and the demo cloud instance) |
 | Packaging | Monorepo: Java bundle (types, resolver, GraphQL, Menus screen) + JS module (views), Formidable's layout |
 | Languages | One tree shared by every language; labels per language; an item can be switched off per language (`j:invalidLanguages`) |
 | classic-templates | Both: its areas accept components marked `jmix:navMenuComponent`, and its header gets a menu source (page tree or a custom menu); two PRs on classic-templates |
@@ -19,7 +19,7 @@
 | Does an untranslated node vanish on live? | No: English-only content nodes stay visible on live in zh_HK, for guest too (gba-hk, `j:mixLanguage` false). A label is never mandatory; the resolver reads the fallback language itself |
 | Marker for template-set areas | `jmix:navMenuComponent` (core, no properties). A second residual child definition `+ * (jmix:navMenuComponent)` added to an area type holding content installs as a minor change and accepts the component. Jahia's legacy `jnt:navMenu` wears it too: a template set filters the editor with its area's allowed types |
 | Header reading a custom menu | Through `server.gql.executeQuerySync` on `menuManager.resolvedMenu` (one resolver); not verified yet that it runs as the visitor (phase 4) |
-| Host versions | jContent 3.8.1, Moonstone 2.20.3, React 18.3.1, react-i18next 11, app-shell 3.3.0 on the local stack and the Molex cloud: webpack, Vite-ready. Moonstone has no drag-and-drop tree: dnd-kit |
+| Host versions | jContent 3.8.1, Moonstone 2.20.3, React 18.3.1, react-i18next 11, app-shell 3.3.0 on the local stack and the demo cloud instance: webpack, Vite-ready. Moonstone has no drag-and-drop tree: dnd-kit |
 | Where menus live | `/sites/<site>/menus` (the site node accepts any child) |
 | Component's menu picker | `choicelist[nodes='$currentSite/menus;mnu:menu']` on a weakreference (not checked in the editor yet) |
 
@@ -80,7 +80,7 @@
 | Topic | Decision |
 |---|---|
 | Pages in the Menus screen | jContent's **ChoiceTree** selector (the Content Editor's tree behind categories), read from the registry (`registry.get('selectorType', 'ChoiceTree').cmp`) with `rootPath: /sites/{site}` and `types: jnt:page`, several pages at once; replaces the hand-made list of ticks. Its children sort by label, as in the content forms |
-| Layouts | **One view, one file** per rendering: `default.server.tsx` (horizontal bar), `mega.server.tsx`, `vertical.server.tsx`, `columns.server.tsx`; what they share sits in `parts.tsx`, not registered. The editor picks one in Layout > View (`j:view`): `jmix:renderable` is a supertype of `mnu:navigation`, so the field has no switch. The `layout` property is gone (never released; the local components were moved to `j:view` first, both workspaces) |
+| Layouts | **One view, one file** per rendering: `default.server.tsx` (horizontal bar), `mega.server.tsx`, `vertical.server.tsx`, `columns.server.tsx`; what they share sits in `parts.tsx`, not registered. The editor picks one in Layout > Select a view (`j:view`): `jmix:renderable` is a supertype of `mnu:navigation`, so the field has no switch. The `layout` property is gone (never released; the local components were moved to `j:view` first, both workspaces) |
 | View labels | `jmix_renderable.j_view.<view>` in the resource bundle of the type's module (menu-manager); the core `link` view stays in the list, as on every content |
 | Removing `layout` | A removal is a major change even with no value left: the local stack took it through provisioning with `ignoreChecks: true`, which an unreleased type may do and a released one never |
 | Resource bundles | Every non-ASCII character is a `\uXXXX` escape (native2ascii reads ISO-8859-1: every French label read `affichÃ©s`); `ResourceBundlesTest` fails the build on a non-ASCII line |
@@ -94,3 +94,30 @@
 | ChoiceTree's listbox has no accessible name (Moonstone's `Dropdown` takes no label) | `aria-label` set on it from the panel's name |
 | Muted text at `--color-gray_dark60` (3.8:1), unselected tabs (#7a7f88, 4.0:1), the fallback dropdown's placeholder, outlined danger buttons (#f44053, 3.7:1) | Full-strength `--color-gray_dark`; unselected tabs recoloured (the screen's one Moonstone recolouring); "Site default" a real option; Delete and Remove neutral outlined buttons with the Delete icon |
 | Filled buttons (user, 2026-11-02) | Moonstone's filled accent (white on #00a0e3, 2.9:1) and danger buttons fail AA; they are Jahia's own back-office colours and stay as jContent draws them. The accessibility spec leaves out `.moonstone-button_accent` and `.moonstone-button_danger` only, with the reason in the test; to raise with Moonstone |
+
+## 2026-11-02: phase 7, CI and release preparation
+
+| Topic | Decision |
+|---|---|
+| CI | content-governance's Jahia standard workflows; a lint job for the Menus screen (ESLint with the Sonar block, added in this phase: 40 findings fixed), the views and the Cypress suite (type-check); the Cypress suite on every PR (one Jahia start, about 1 minute of specs) and nightly |
+| Sonar | The Java module's `sonar.sources` includes `src/javascript`, its `*.test.ts` counted as tests |
+| Security scan | `jahia-security-scan` clean; `createMenu`, `updateMenu`, `deleteMenu`, `editableMenu` matched the admin-name heuristic of `jahia-graphql-admin-no-permission`: triaged inline (`nosemgrep` with the reason), the per-site check being tested by `authorization.spec.ts` |
+| Version | One version for both modules; `.chachalog/.version` 0.0.0 until 1.0.0 (it said 1.0.0, which a major fragment would have turned into 2.0.0); the first release's notes are five fragments |
+| Store | One pack, `store-submissions/menu-manager/`, two listings (the module, its views); packages from the CI-built GitHub release |
+| Item node names (bug found seeding the Store demo) | Items were named after their kind, so a page item's first page item was a node `page` beside the item's `page` property, and publication dropped the property in live: the item vanished from the visitors' menu while the screen showed it published. Items are now named after their type (`pageItem`...), and an item still named `page` is renamed on its next save; `edge-cases.spec.ts` publishes such a tree and reads it in live, `MenuStoreImplTest` keeps the names apart from every item property |
+
+## 2026-11-02: before 1.0.0, review outcomes (Java review, Cortex review) and user requests
+
+| Topic | Outcome |
+|---|---|
+| Edit link (user) | The Menu component's edit-mode note links to jContent > Menus on its menu: `<context>/jahia/jcontent/<the menu's site>/<language>/apps/menuManager?menu=<path>`, `target="_top"` (the edit frame is an iframe); the screen opens the menu the URL names when it is one of the site's |
+| Add items (user) | Back to Moonstone's Accordion (tabs scrolled sideways in the 340 px column). Its header's invalid `role="accordion-item"` becomes `button` and its panel gets the id `aria-controls` names, in one effect of the panel; the axe check passes |
+| Add pages | Ticked pages are read by identifier (`nodesById`): no list capped at 2000 under a hard-coded `home` |
+| References | A reference the editor did not change is kept without being read: a deleted or unreadable target no longer blocks the save of the rest of the menu |
+| Subpages | Exact dependencies on each page visited (the subtree pattern flushed every menu on any publication under them); at most 500 subpages per menu |
+| Stale live menu after a target is published | Not reproduced: publishing the target flushes the cached menu (`acl-and-cache.spec.ts` keeps the case) |
+| Paths and addresses | `.`/`..` refused as a menu name; an address scheme is stored in lower case (the CND constraint is case-sensitive) |
+| Theme tokens | Public `--mnu-*` read wherever a theme sets them, private `--_mnu-*` used by the views |
+| Release version | `release-prepare` profile (after Formidable) writes the Maven version into both `package.json`, `jahia.snapshot` from it, and commits them before the poms |
+| CI | Dependency audit (`audit-ci --critical --skip-dev`) of both JavaScript projects in the lint job; the nightly token read-only |
+| Documented, not changed | `manageMenus` gates the screen and its API, not writes to `/sites/<site>/menus`; it needs `publish` too; the views' hook order (`useGQLQuery` after an early return) and the eager fallback lookups stay as they are; languages are checked for form, not against the site's |

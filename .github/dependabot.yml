@@ -1,0 +1,77 @@
+version: 2
+updates:
+  # npm, the Menus screen (UI extension): its front-end dependencies, under the constraints below.
+  - package-ecosystem: "npm"
+    directory: "/menu-manager"
+    schedule:
+      interval: "weekly"
+    # Dependabot uses this as the PR title, which the shared "Lint PR Title" check requires to
+    # carry a conventional-commit type ("chore(deps): bump ...").
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    open-pull-requests-limit: 5
+    ignore:
+      # React 18 is a hard constraint: the bundle shares jContent's React 18 singleton through
+      # Module Federation.
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      # css-loader 7 switches CSS modules to named exports: the bundle compiles and every
+      # `styles.x` is undefined at runtime (screen unstyled). Needs a webpack config change first.
+      - dependency-name: "css-loader"
+        update-types: ["version-update:semver-major"]
+      # Module Federation singletons shared with the jContent host. Webpack elects the HIGHEST
+      # version among providers, so a newer major shipped by this bundle replaces the host's copy
+      # for the whole back office, not only this screen. CI cannot catch it: the bundle compiles.
+      # Read the host's versions (javascript/apps/package.json inside the jcontent jar) before
+      # relaxing one.
+      - dependency-name: "i18next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-i18next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@jahia/data-helper"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@jahia/ui-extender"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@jahia/moonstone"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+
+  # npm, the views (JavaScript module, React 19): the JavaScript modules library follows the engine
+  # every environment runs, raised with it in one change, never by a bot.
+  - package-ecosystem: "npm"
+    directory: "/menu-manager-views"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "@jahia/javascript-modules-library"
+      - dependency-name: "@jahia/vite-plugin"
+        update-types: ["version-update:semver-major"]
+
+  # npm, the Cypress suite (tests/)
+  - package-ecosystem: "npm"
+    directory: "/tests"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    open-pull-requests-limit: 3
+
+  # Maven: the Jahia parent POM and the provided Jahia artifacts follow the platform version and
+  # are never bumped by a bot.
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    ignore:
+      - dependency-name: "org.jahia.modules:jahia-modules"
+      - dependency-name: "org.jahia.server:*"

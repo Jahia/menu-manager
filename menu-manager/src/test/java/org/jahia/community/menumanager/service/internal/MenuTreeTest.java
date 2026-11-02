@@ -19,7 +19,7 @@ class MenuTreeTest {
                   {"id": "%s", "kind": "page", "page": "%s", "label": " Products ", "includeSubpages": true, "newTab": true,
                    "children": [
                      {"kind": "section", "label": "Popular", "children": [
-                       {"kind": "externalLink", "url": "https://www.molex.com", "newTab": true, "invalidLanguages": ["zh"]}]}]},
+                       {"kind": "externalLink", "url": "https://www.example.com", "newTab": true, "invalidLanguages": ["zh"]}]}]},
                   {"kind": "internalLink", "target": "%s", "style": "button"}]}
                 """.formatted(ITEM, PAGE, PAGE));
         assertThat(tree.count()).isEqualTo(4);
@@ -30,7 +30,7 @@ class MenuTreeTest {
         assertThat(page.includeSubpages()).isTrue();
         assertThat(page.newTab()).as("new tab is for links only").isFalse();
         MenuTree.Item link = page.children().get(0).children().get(0);
-        assertThat(link.url()).isEqualTo("https://www.molex.com");
+        assertThat(link.url()).isEqualTo("https://www.example.com");
         assertThat(link.newTab()).isTrue();
         assertThat(link.invalidLanguages()).containsExactly("zh");
         assertThat(tree.items().get(1).style()).isEqualTo("button");

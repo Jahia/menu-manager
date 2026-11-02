@@ -28,26 +28,43 @@ public final class UrlPolicy {
         }
         // Spaces only: trim() would also drop other control characters at the ends, silently.
         String url = stripSpaces(raw.replace("\t", "").replace("\n", "").replace("\r", ""));
-        if (url.isEmpty() || url.length() > MAX_LENGTH || url.startsWith("//") || url.startsWith("/\\") || url.startsWith("\\/")) {
+        if (url.isEmpty() || url.length() > MAX_LENGTH || url.startsWith("//") || url.startsWith("/\\") || url.startsWith("\\/")
+                || hasControlCharacter(url)) {
             return Optional.empty();
-        }
-        for (int i = 0; i < url.length(); i++) {
-            char c = url.charAt(i);
-            if (c <= ' ' || c == 0x7f) {
-                return Optional.empty();
-            }
         }
         String lower = url.toLowerCase(Locale.ROOT);
         if (lower.startsWith("https://") || lower.startsWith("http://")) {
-            String rest = url.substring(url.indexOf("://") + 3);
-            int end = firstOf(rest, "/?#");
-            String authority = end < 0 ? rest : rest.substring(0, end);
-            return authority.isEmpty() || authority.contains("\\") ? Optional.empty() : Optional.of(url);
+            return hasHost(url) ? Optional.of(lowerScheme(url)) : Optional.empty();
         }
         if ((lower.startsWith("mailto:") && url.length() > 7) || (lower.startsWith("tel:") && url.length() > 4)) {
-            return Optional.of(url);
+            return Optional.of(lowerScheme(url));
         }
         return Optional.empty();
+    }
+
+    /** A space, a control character or DEL anywhere: refused rather than cleaned. */
+    private static boolean hasControlCharacter(String url) {
+        for (int i = 0; i < url.length(); i++) {
+            char c = url.charAt(i);
+            if (c <= ' ' || c == 0x7f) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** An http(s) address names a host, with no backslash in it (some browsers read one as a slash). */
+    private static boolean hasHost(String url) {
+        String rest = url.substring(url.indexOf("://") + 3);
+        int end = firstOf(rest, "/?#");
+        String authority = end < 0 ? rest : rest.substring(0, end);
+        return !authority.isEmpty() && !authority.contains("\\");
+    }
+
+    /** The scheme in lower case, as the content type's constraint expects ({@code HTTPS://} would be refused there). */
+    private static String lowerScheme(String url) {
+        int colon = url.indexOf(':');
+        return url.substring(0, colon).toLowerCase(Locale.ROOT) + url.substring(colon);
     }
 
     private static String stripSpaces(String s) {

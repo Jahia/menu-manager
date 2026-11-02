@@ -1,5 +1,6 @@
 package org.jahia.community.menumanager.service.internal;
 
+import org.jahia.api.Constants;
 import org.jahia.community.menumanager.model.MenuItemKind;
 import org.jahia.community.menumanager.model.Promotion;
 import org.jahia.community.menumanager.model.ResolvedItem;
@@ -38,6 +39,10 @@ public class MenuResolverImpl implements MenuResolver {
     static final String MENU_TYPE = "mnu:menu";
     static final String ITEM_MIXIN = "mnumix:menuItem";
     static final String PAGE_TYPE = "jnt:page";
+    /** A page's and a menu's title. */
+    static final String TITLE = "jcr:title";
+    /** The style of an item without one. */
+    static final String DEFAULT_STYLE = "default";
     /** classic-templates' page-level menu promotion, read when a page item has none of its own. */
     static final String PAGE_PROMOTION = "ctplmix:navPromo";
     static final String INVALID_LANGUAGES = "j:invalidLanguages";
@@ -47,7 +52,7 @@ public class MenuResolverImpl implements MenuResolver {
     @Override
     public Optional<ResolvedMenu> resolve(String menuIdOrPath, String workspace, String language, String currentPath, int maxDepth)
             throws RepositoryException {
-        if (!"default".equals(workspace) && !"live".equals(workspace) || language == null || language.isBlank()) {
+        if (!Constants.EDIT_WORKSPACE.equals(workspace) && !Constants.LIVE_WORKSPACE.equals(workspace) || language == null || language.isBlank()) {
             return Optional.empty();
         }
         Locale locale = LanguageCodeConverters.languageCodeToLocale(language);
@@ -62,7 +67,7 @@ public class MenuResolverImpl implements MenuResolver {
         Context ctx = new Context(language, currentPath, Math.max(1, Math.min(MAX_DEPTH, maxDepth)), lookup);
         ctx.dependencies.add(menu.getPath() + "/*");
         List<ResolvedItem> items = children(menu, 1, ctx);
-        return Optional.of(new ResolvedMenu(menu.getIdentifier(), menu.getPath(), first(text(menu, "jcr:title"), ctx.fallback(menu, "jcr:title")),
+        return Optional.of(new ResolvedMenu(menu.getIdentifier(), menu.getPath(), first(text(menu, TITLE), ctx.fallback(menu, TITLE)),
                 language, items, new ArrayList<>(ctx.dependencies)));
     }
 
@@ -99,7 +104,7 @@ public class MenuResolverImpl implements MenuResolver {
         String fallbackLabel = label == null ? ctx.fallback(node, "label") : null;
         String description = first(text(node, "description"), ctx.fallback(node, "description"));
         String chosenStyle = text(node, "itemStyle");
-        String style = chosenStyle == null ? "default" : chosenStyle;
+        String style = chosenStyle == null ? DEFAULT_STYLE : chosenStyle;
         return switch (kind) {
             case PAGE -> pageItem(node, label, fallbackLabel, description, style, depth, ctx);
             case SECTION -> {
@@ -116,7 +121,7 @@ public class MenuResolverImpl implements MenuResolver {
                     yield Optional.empty();
                 }
                 ctx.dependencies.add(target.getPath());
-                String shown = first(label, text(target, "jcr:title"), fallbackLabel, ctx.fallback(target, "jcr:title"),
+                String shown = first(label, text(target, TITLE), fallbackLabel, ctx.fallback(target, TITLE),
                         target.getDisplayableName());
                 yield Optional.of(new ResolvedItem(node.getIdentifier(), kind, shown, description, style, target.getIdentifier(),
                         target.getPath(), null, bool(node, "newTab"), ctx.isCurrent(target), ctx.inTrail(target),
@@ -138,14 +143,16 @@ public class MenuResolverImpl implements MenuResolver {
         if (page == null || !page.isNodeType(PAGE_TYPE) || invalidIn(page, ctx.language)) {
             return Optional.empty();
         }
-        String shown = first(label, text(page, "jcr:title"), fallbackLabel, ctx.fallback(page, "jcr:title"));
+        String shown = first(label, text(page, TITLE), fallbackLabel, ctx.fallback(page, TITLE));
         if (shown == null) {
             return Optional.empty();
         }
         ctx.dependencies.add(page.getPath());
         List<ResolvedItem> kids = children(node, depth + 1, ctx);
         if (bool(node, "includeSubpages")) {
-            ctx.dependencies.add(page.getPath() + "/*");
+            // Each page visited is a dependency of its own (a title, a hide flag); a page added under one of
+            // them flushes through its parent's path. Never the subtree: it matches every content node of
+            // those pages, and any publication on them would flush the menu of every page.
             kids.addAll(subpages(page, depth + 1, ctx));
         }
         return Optional.of(new ResolvedItem(node.getIdentifier(), MenuItemKind.PAGE, shown, description, style, page.getIdentifier(),
@@ -161,17 +168,31 @@ public class MenuResolverImpl implements MenuResolver {
         if (depth > ctx.maxDepth) {
             return out;
         }
+        // At most as many subpages as a menu built by hand may hold: the walk is open to visitors
         for (JCRNodeWrapper child : page.getNodes()) {
-            if (!child.isNodeType(PAGE_TYPE) || hiddenFromNavigation(child) || invalidIn(child, ctx.language)) {
-                continue;
+            if (ctx.subpages >= MenuTree.MAX_ITEMS) {
+                break;
             }
-            String title = first(text(child, "jcr:title"), ctx.fallback(child, "jcr:title"));
-            if (title != null) {
-                out.add(new ResolvedItem(child.getIdentifier(), MenuItemKind.PAGE, title, null, "default", child.getIdentifier(),
-                        child.getPath(), null, false, ctx.isCurrent(child), ctx.inTrail(child), subpages(child, depth + 1, ctx), null));
+            if (child.isNodeType(PAGE_TYPE)) {
+                ctx.dependencies.add(child.getPath());
+                subpage(child, depth, ctx).ifPresent(out::add);
             }
         }
         return out;
+    }
+
+    /** A subpage shown in navigation, titled in the language or the fallback language, with its own subpages. */
+    private Optional<ResolvedItem> subpage(JCRNodeWrapper child, int depth, Context ctx) throws RepositoryException {
+        if (hiddenFromNavigation(child) || invalidIn(child, ctx.language)) {
+            return Optional.empty();
+        }
+        String title = first(text(child, TITLE), ctx.fallback(child, TITLE));
+        if (title == null) {
+            return Optional.empty();
+        }
+        ctx.subpages++;
+        return Optional.of(new ResolvedItem(child.getIdentifier(), MenuItemKind.PAGE, title, null, DEFAULT_STYLE, child.getIdentifier(),
+                child.getPath(), null, false, ctx.isCurrent(child), ctx.inTrail(child), subpages(child, depth + 1, ctx), null));
     }
 
 
@@ -329,6 +350,8 @@ public class MenuResolverImpl implements MenuResolver {
         final int maxDepth;
         final FallbackLookup fallbackLookup;
         final Set<String> dependencies = new LinkedHashSet<>();
+        /** Subpages added so far by includeSubpages items, across the menu. */
+        int subpages;
 
         Context(String language, String currentPath, int maxDepth, FallbackLookup fallbackLookup) {
             this.language = language;

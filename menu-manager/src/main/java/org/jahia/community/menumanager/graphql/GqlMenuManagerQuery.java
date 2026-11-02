@@ -83,6 +83,9 @@ public class GqlMenuManagerQuery {
      * @param language the edited language
      * @return the menu as the Menus screen edits it
      */
+    // manageMenus is a site permission, checked on the site by MenuAccess (tests/authorization.spec.ts):
+    // @GraphQLRequiresPermission would check it on the server root and refuse site administrators.
+    // nosemgrep: jahia-graphql-admin-no-permission
     @GraphQLField
     @GraphQLName("editableMenu")
     @GraphQLNonNull

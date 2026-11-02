@@ -22,7 +22,7 @@ const hasPromo = (promo: Promo): boolean =>
  * context path ("thumbnail2": about 350 pixels).
  */
 const thumbnailUrl = (image: Target): string | undefined => image.path
-    ? `${window.contextJsParameters?.contextPath || ''}/files/default${image.path.split('/').map(encodeURIComponent).join('/')}?t=thumbnail2`
+    ? `${globalThis.contextJsParameters?.contextPath || ''}/files/default${image.path.split('/').map(encodeURIComponent).join('/')}?t=thumbnail2`
     : undefined;
 
 /**
@@ -34,7 +34,7 @@ const thumbnailUrl = (image: Target): string | undefined => image.path
 export const PromoEditor = ({item, fallbackLanguage, onPatch, onPick}: PromoEditorProps): JSX.Element => {
     const {t} = useTranslation(NS);
     const {promo} = item;
-    const [open, setOpen] = useState(hasPromo(promo));
+    const [open, setOpen] = useState(() => hasPromo(promo));
     const id = (field: string): string => `mnu-${item.key}-promo-${field}`;
     const thumb = promo.image?.available ? thumbnailUrl(promo.image) : undefined;
 

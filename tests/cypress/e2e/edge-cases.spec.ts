@@ -158,6 +158,16 @@ describe('Menu Manager - edge cases', () => {
         resolve(asRoot(), menuPath, 'en', 'EDIT', 1).then(items => expect(labels(items)).to.deep.eq(['Home']));
     });
 
+    it('keeps the target of a page item whose first item is a page item, once published (a node and a property of one name)', () => {
+        // Regression: items were named after their kind, so a page item's first page item was a node named
+        // "page" beside the item's own "page" property, and publication dropped the property in live
+        uuidOf(`${home}/contact`).then(contact => {
+            saveMenuOk(menuPath, 'en', [{kind: 'page', page: aboutUuid, children: [{kind: 'page', page: contact}]}]);
+        });
+        cy.then(() => publish(`/sites/${siteKey}`));
+        resolve(null, menuPath, 'en', 'LIVE').then(items => expect(labels(items)).to.deep.eq(['About us', 'About us > Contact']));
+    });
+
     it('leaves out a target that is deleted, or not published, in live only for the latter', () => {
         addNodeTree(home, {name: 'draft', type: 'jnt:page', props: [
             {name: 'jcr:title', value: 'Draft page', language: 'en'}, {name: 'j:templateName', value: 'content'}]}).then(draftUuid => {

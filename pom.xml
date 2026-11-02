@@ -81,4 +81,64 @@
             <snapshots><enabled>false</enabled></snapshots>
         </pluginRepository>
     </pluginRepositories>
+
+    <!-- The release writes the Maven version into each module's package.json (.m2/sync-version.mjs) and
+         commits it before the poms (.m2/commit-synced-files.sh): Maven's release bumps the poms only,
+         and the views package would otherwise ship as 1.0.0-SNAPSHOT. After Formidable's setup. -->
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <preparationGoals>-P release-prepare clean verify exec:exec@commit-synced-files</preparationGoals>
+                    <completionGoals>-P release-prepare clean install exec:exec@commit-synced-files</completionGoals>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>release-prepare</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Before the front-end builds of the module: they pack package.json -->
+                            <execution>
+                                <id>sync-version</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>node</executable>
+                                    <arguments>
+                                        <argument>${maven.multiModuleProjectDirectory}/.m2/sync-version.mjs</argument>
+                                        <argument>${project.version}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <!-- Not bound to a phase: the release plugin calls it after the build -->
+                            <execution>
+                                <id>commit-synced-files</id>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <arguments>
+                                        <argument>${maven.multiModuleProjectDirectory}/.m2/commit-synced-files.sh</argument>
+                                        <argument>${project.version}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

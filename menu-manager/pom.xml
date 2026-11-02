@@ -22,6 +22,11 @@
         <skipTests>false</skipTests>
         <graphql-dxm-provider.version>3.5.1</graphql-dxm-provider.version>
         <graphql-java-annotations.version>21.1</graphql-java-annotations.version>
+        <!-- Sonar reads the Menus screen (src/javascript) with the Java; its unit tests are tests, not sources -->
+        <sonar.sources>src/main/java,src/javascript,pom.xml,package.json</sonar.sources>
+        <sonar.exclusions>**/*.test.ts</sonar.exclusions>
+        <sonar.tests>src/test/java,src/javascript</sonar.tests>
+        <sonar.test.inclusions>**/*.test.ts,**/*Test.java</sonar.test.inclusions>
     </properties>
 
     <dependencies>

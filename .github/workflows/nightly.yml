@@ -1,0 +1,53 @@
+# Nightly run of the Cypress suite (tests/) against the Jahia release this module targets, on the
+# modules built from main. Pull requests run it too; the nightly run catches what changed outside the
+# repository (a released dependency, the Jahia image), to be fixed in a PR.
+# TestRail and PagerDuty are off: the module has neither a TestRail project nor a PagerDuty service.
+name: Nightly Test run (Jahia 8.2.3.2)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * *"
+
+# A read-only token: the repository default is write, and these jobs only build and test
+permissions:
+  contents: read
+
+jobs:
+  build:
+    permissions:
+      contents: read
+      packages: read
+    name: Build Module
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/jahia/jahia-docker-mvn-cache:17-jdk-noble-mvn-loaded
+      credentials:
+        username: ${{ secrets.GH_PACKAGES_USERNAME }}
+        password: ${{ secrets.GH_PACKAGES_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jahia/jahia-modules-action/build@v2
+        with:
+          nexus_username: ${{ secrets.NEXUS_USERNAME }}
+          nexus_password: ${{ secrets.NEXUS_PASSWORD }}
+          mvn_settings_filepath: '.github/maven.settings.xml'
+
+  integration-tests:
+    permissions:
+      contents: read
+      packages: read
+      checks: write
+    needs: build
+    uses: Jahia/jahia-modules-action/.github/workflows/reusable-integration-tests.yml@v2
+    secrets: inherit
+    with:
+      # The release the module is built and tested against locally; the manifest adds the jContent
+      # it requires (3.7 or later: the image ships 3.5.0) and the template set of the test sites.
+      jahia_image: jahia/jahia-ee:8.2.3.2
+      module_id: menu-manager
+      should_skip_testrail: true
+      pagerduty_skip_notification: true
+      provisioning_manifest: provisioning-manifest-build.yml
+      artifact_prefix: menu-manager
+      module_branch: ${{ github.ref }}

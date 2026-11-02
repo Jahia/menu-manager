@@ -97,15 +97,15 @@ describe('Menu Manager - the Menus screen', () => {
         cy.get('[data-mnu-role="add-items"]').contains('button', 'Add to menu').click();
 
         // A section
-        cy.get('[data-mnu-role="add-items"]').contains('[role="tab"]', /^Section$/).click();
+        cy.get('[data-mnu-role="add-items"]').contains('header', /^Section$/).click();
         cy.get('#mnu-add-section').type('Resources');
-        cy.get('#mnu-add-section').closest('[role="tabpanel"]').contains('button', 'Add to menu').click();
+        cy.get('#mnu-add-section').closest('[role="region"]').contains('button', 'Add to menu').click();
 
         // An external link
-        cy.get('[data-mnu-role="add-items"]').contains('[role="tab"]', /^External link$/).click();
+        cy.get('[data-mnu-role="add-items"]').contains('header', /^External link$/).click();
         cy.get('#mnu-add-url').clear().type('https://www.jahia.com');
         cy.get('#mnu-add-external').type('Jahia');
-        cy.get('#mnu-add-external').closest('[role="tabpanel"]').contains('button', 'Add to menu').click();
+        cy.get('#mnu-add-external').closest('[role="region"]').contains('button', 'Add to menu').click();
         expectRows([{label: 'About us', depth: 0}, {label: 'Resources', depth: 0}, {label: 'Jahia', depth: 0}]);
 
         // Keyboard path: the Move buttons of the item's editor

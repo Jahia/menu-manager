@@ -1,0 +1,91 @@
+# This workflow is triggered when someone creates a new GitHub release and ticks
+# "Set as a pre-release". It runs the Maven release (tag + version bump + deploy to a Nexus
+# staging repository), refreshes the module signature and promotes the staging repository.
+#
+# The release tag IS the released version, in Jahia's underscore form: 1_0_0, not v1.0.0.
+# The action derives the Maven version from the tag by replacing "_" with ".", so a tag that
+# starts with "v" produces an invalid version.
+#
+# It pushes the release commits over SSH as the org CI account: until a repository admin grants
+# that account write access to this repository, the first push fails ("Permission denied") and
+# the release is done by hand (see README, "Releases").
+name: Trigger Release creation
+
+on:
+  release:
+    types: [prereleased]
+
+# A read-only token for every job: the release pushes with its own SSH key, Nexus and
+# Dependency-Track have their own credentials.
+permissions:
+  contents: read
+
+jobs:
+  on-release:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/jahia/jahia-docker-mvn-cache:17-jdk-noble-mvn-loaded
+      credentials:
+        username: ${{ secrets.GH_PACKAGES_USERNAME }}
+        password: ${{ secrets.GH_PACKAGES_TOKEN }}
+
+    steps:
+      # The SSH key of a user in an admin group is what lets the release commits
+      # bypass the branch protection rules on main.
+      - uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.GH_SSH_PRIVATE_KEY_JAHIACI }}
+
+      - uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.GH_SSH_PRIVATE_KEY_JAHIACI }}
+
+      # The checkout is written as the runner user and the steps below run as root inside the
+      # build container, so git refuses the working copy ("detected dubious ownership") until it
+      # is declared trusted.
+      - name: Trust the checked-out workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - uses: jahia/jahia-modules-action/release@v2
+        name: Release Module
+        with:
+          github_slug: Jahia/menu-manager
+          primary_release_branch: main
+          release_id: ${{ github.event.release.id }}
+          release_version: ${{ github.event.release.tag_name }}
+          github_api_token: ${{ secrets.GH_API_TOKEN }}
+          nexus_username: ${{ secrets.NEXUS_USERNAME }}
+          nexus_password: ${{ secrets.NEXUS_PASSWORD }}
+          mvn_settings_filepath: '.github/maven.settings.xml'
+
+      - uses: jahia/jahia-modules-action/update-signature@v2
+        with:
+          nexus_username: ${{ secrets.NEXUS_USERNAME }}
+          nexus_password: ${{ secrets.NEXUS_PASSWORD }}
+          mvn_settings_filepath: '.github/maven.settings.xml'
+          force_signature: true
+
+      - uses: jahia/jahia-modules-action/release-publication@v2
+        name: Publish Module
+        with:
+          module_id: menu-manager
+          release_version: ${{ github.event.release.tag_name }}
+          nexus_username: ${{ secrets.NEXUS_USERNAME }}
+          nexus_password: ${{ secrets.NEXUS_PASSWORD }}
+
+  sbom:
+    permissions:
+      contents: read
+    name: SBOM processing
+    needs: on-release
+    runs-on: ubuntu-latest
+    container:
+      image: cyclonedx/cyclonedx-cli:0.24.2
+    steps:
+      - uses: jahia/jahia-modules-action/sbom-processing@v2
+        with:
+          dependencytrack_hostname: ${{ vars.DEPENDENCYTRACK_HOSTNAME }}
+          dependencytrack_apikey: ${{ secrets.DEPENDENCYTRACK_APIKEY }}

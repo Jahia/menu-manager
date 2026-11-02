@@ -1,0 +1,162 @@
+# This workflow is triggered every time a change is pushed to an open pull request.
+# It is the gating CI for a Jahia module PR.
+# Composite actions come from https://github.com/Jahia/jahia-modules-action, pinned by
+# their major alias @v2 (a generated Git tag, re-pointed by every v2.x.y release).
+name: On Code Change (PR)
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    # A change to docs, the changelog or the agents' notes builds nothing worth the 20 minutes
+    paths-ignore:
+      - '**/*.md'
+      - '.agents/**'
+      - '.chachalog/**'
+      - 'docs/**'
+
+# A new commit on the PR cancels the run of the previous one
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Each job says what its token may do. The repository default is write (every action in a
+# job, and every dependency of those actions, able to push to main) and none of these jobs
+# needs that. A job-level block replaces the default rather than adding to it.
+jobs:
+  update-signature:
+    permissions:
+      contents: read
+      packages: read
+    name: Update module signature
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jahia/jahia-modules-action/update-signature@v2
+        with:
+          nexus_username: ${{ secrets.NEXUS_USERNAME }}
+          nexus_password: ${{ secrets.NEXUS_PASSWORD }}
+
+  static-analysis:
+    permissions:
+      contents: read
+      packages: read
+    name: Static Analysis (linting, vulns)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Jahia/jahia-modules-action/static-analysis@v2
+        with:
+          primary_release_branch: main
+          auditci_level: critical
+          # The action lints and audits the package.json at the root, and there is none: the two
+          # JavaScript projects (the Menus screen, the views) are linted by the job below. tests/ is
+          # the Cypress suite: its dependencies never ship in a module, and it is type-checked below.
+          skip_lint_modules: true
+          skip_lint_tests: true
+          skip_vulns_tests: true
+
+  lint:
+    permissions:
+      contents: read
+    name: Lint and type-check (Menus screen, views, Cypress suite)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Each project's own Yarn (packageManager): 1.22 for the screen and the suite, 4 for the views
+      - run: corepack enable
+      # The ESLint config of each carries the Sonar block: the gate's usual rules fail here first
+      # audit-ci on the runtime dependencies: the shared action audits the root package.json, which
+      # this monorepo does not have. Installs run no package scripts (Sonar S6505): linting and
+      # type-checking need none
+      - name: Menus screen (UI extension)
+        working-directory: menu-manager
+        run: |
+          yarn install --frozen-lockfile --ignore-scripts
+          yarn typecheck
+          yarn lint --max-warnings 0
+          npx --yes audit-ci@7 --critical --skip-dev
+      - name: Views
+        working-directory: menu-manager-views
+        env:
+          # Yarn 2+ runs package scripts unless told not to (Sonar S6505)
+          YARN_ENABLE_SCRIPTS: false
+        run: |
+          yarn install --immutable --mode=skip-build
+          yarn lint --max-warnings 0
+          npx --yes audit-ci@7 --critical --skip-dev
+      - name: Cypress suite
+        working-directory: tests
+        env:
+          CYPRESS_INSTALL_BINARY: 0
+        run: |
+          yarn install --frozen-lockfile --ignore-scripts
+          yarn typecheck
+
+  build:
+    permissions:
+      contents: read
+      packages: read
+    name: Build Module
+    needs: update-signature
+    runs-on: ubuntu-latest
+    # Image with a warmed-up ~/.m2 so Maven does not download the world on every run.
+    # https://github.com/Jahia/jahia-docker-mvn-cache
+    container:
+      image: ghcr.io/jahia/jahia-docker-mvn-cache:17-jdk-noble-mvn-loaded
+      credentials:
+        username: ${{ secrets.GH_PACKAGES_USERNAME }}
+        password: ${{ secrets.GH_PACKAGES_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jahia/jahia-modules-action/build@v2
+        with:
+          nexus_username: ${{ secrets.NEXUS_USERNAME }}
+          nexus_password: ${{ secrets.NEXUS_PASSWORD }}
+          mvn_settings_filepath: '.github/maven.settings.xml'
+
+  sonar-analysis:
+    permissions:
+      contents: read
+      packages: read
+    name: Sonar Analysis
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      # fetch-depth: 0 is required: Sonar decides which lines are "new" from git blame, and a
+      # shallow clone makes every line of every changed file new, so a PR inherits all the
+      # findings of the files it touches and the zero-issue gate can never pass.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: jahia/jahia-modules-action/sonar-analysis@v2
+        with:
+          primary_release_branch: main
+          github_pr_id: ${{ github.event.number }}
+          sonar_url: ${{ secrets.SONAR_URL }}
+          sonar_token: ${{ secrets.SONAR_TOKEN }}
+          mvn_settings_filepath: '.github/maven.settings.xml'
+          # The action defaults to Java 11; sonar-maven-plugin 5.x needs a Java 17 runtime.
+          java_version: '17'
+
+  # The Cypress suite (tests/) on the jar and the views package this run built, against the Jahia
+  # release the module targets; the manifest adds jContent 3.8, the JavaScript modules engine 1.3 and
+  # the template set of the test sites (classic-templates).
+  integration-tests:
+    permissions:
+      contents: read
+      packages: read
+      checks: write
+    needs: build
+    uses: Jahia/jahia-modules-action/.github/workflows/reusable-integration-tests.yml@v2
+    secrets: inherit
+    with:
+      jahia_image: jahia/jahia-ee:8.2.3.2
+      module_id: menu-manager
+      should_skip_testrail: true
+      pagerduty_skip_notification: true
+      provisioning_manifest: provisioning-manifest-build.yml
+      artifact_prefix: menu-manager
+      module_branch: ${{ github.ref }}

@@ -292,6 +292,29 @@ interface EditorProps {
     onConfirm: (message: string, action: () => void) => void;
 }
 
+/** What the label field shows when empty: the label visitors will see instead, and where it comes from. */
+const labelPlaceholder = (shown: {text: string; fallback: boolean}, item: Item, fallbackLanguage: string,
+                          t: (key: string, options?: Record<string, string>) => string): string => {
+    if (!shown.text) {
+        return '';
+    }
+    if (shown.fallback) {
+        return t('editor.labelPlaceholderFallback', {lang: upper(fallbackLanguage), label: shown.text});
+    }
+    return item.target?.title === shown.text ? t('editor.labelPlaceholderTitle', {title: shown.text}) : shown.text;
+};
+
+/** The item just above an item among its siblings, and its parent: what the Under and Out moves name. */
+const neighbours = (items: Item[], key: string): {above: Item | null; parent: Item | null} => {
+    const at = locate(items, key);
+    if (!at) {
+        return {above: null, parent: null};
+    }
+    const parent = at.parentKey ? find(items, at.parentKey) : null;
+    const siblings = at.parentKey === null ? items : parent?.children ?? [];
+    return {above: at.index > 0 ? siblings[at.index - 1] : null, parent};
+};
+
 /** Everything about one item, in the edited language; and the moves, for the keyboard. */
 const ItemEditor = ({item, items, language, fallbackLanguage, siteLanguages, onChange, onPickTarget, onPickPromo, isTop,
                         onConfirm}: EditorProps): JSX.Element => {
@@ -299,14 +322,8 @@ const ItemEditor = ({item, items, language, fallbackLanguage, siteLanguages, onC
     const set = (patch: Partial<Item>): void => onChange(update(items, item.key, patch));
     const id = (field: string): string => `mnu-${item.key}-${field}`;
     const shown = displayLabel({...item, label: ''});
-    const placeholder = !shown.text ? ''
-        : shown.fallback ? t('editor.labelPlaceholderFallback', {lang: upper(fallbackLanguage), label: shown.text})
-            : item.target?.title === shown.text ? t('editor.labelPlaceholderTitle', {title: shown.text}) : shown.text;
-
-    const at = locate(items, item.key);
-    const siblings = at ? (at.parentKey === null ? items : find(items, at.parentKey)?.children ?? []) : [];
-    const above = at && at.index > 0 ? siblings[at.index - 1] : null;
-    const parent = at?.parentKey ? find(items, at.parentKey) : null;
+    const placeholder = labelPlaceholder(shown, item, fallbackLanguage, t);
+    const {above, parent} = neighbours(items, item.key);
     const moves: {key: string; label: string; run: () => Item[] | null}[] = [
         {key: 'up', label: t('editor.up'), run: () => moveUp(items, item.key)},
         {key: 'down', label: t('editor.down'), run: () => moveDown(items, item.key)},
