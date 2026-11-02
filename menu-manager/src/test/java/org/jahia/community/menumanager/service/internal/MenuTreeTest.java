@@ -44,6 +44,12 @@ class MenuTreeTest {
     }
 
     @Test
+    void aStoredSectionMayHaveNoLabelInTheSavedLanguage() throws MenuException {
+        MenuTree tree = MenuTree.parse("{\"items\": [{\"id\": \"%s\", \"kind\": \"section\"}]}".formatted(ITEM));
+        assertThat(tree.items().get(0).label()).isNull();
+    }
+
+    @Test
     void refusesAFourthLevel() {
         String deep = "{\"kind\": \"section\", \"label\": \"x\", \"children\": [%s]}";
         String leaf = "{\"kind\": \"externalLink\", \"url\": \"https://a.example\"}";

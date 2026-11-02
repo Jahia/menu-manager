@@ -11,7 +11,6 @@ import org.jahia.services.content.decorator.JCRSiteNode;
 import org.jahia.services.usermanager.JahiaUserManagerService;
 import org.jahia.utils.LanguageCodeConverters;
 
-import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import java.util.ArrayList;
@@ -35,11 +34,13 @@ final class EditableReader {
     private final JCRSessionWrapper fallbackRaw;
     private final JCRSessionWrapper withFallback;
     private final JCRSessionWrapper live;
+    private final Locale siteDefault;
     private final List<GqlEditableItem> all = new ArrayList<>();
 
-    private EditableReader(String language, String fallback) throws RepositoryException {
+    private EditableReader(String language, String fallback, String siteDefault) throws RepositoryException {
         this.language = language;
         this.fallback = fallback;
+        this.siteDefault = LanguageCodeConverters.languageCodeToLocale(siteDefault);
         JCRSessionFactory sessions = JCRSessionFactory.getInstance();
         Locale locale = LanguageCodeConverters.languageCodeToLocale(language);
         Locale fallbackLocale = LanguageCodeConverters.languageCodeToLocale(fallback);
@@ -59,7 +60,7 @@ final class EditableReader {
         JCRSiteNode site = menu.getResolveSite();
         String own = text(menu, "fallbackLanguage");
         String effective = own != null ? own : site.getDefaultLanguage();
-        EditableReader reader = new EditableReader(language, effective);
+        EditableReader reader = new EditableReader(language, effective, site.getDefaultLanguage());
         JCRNodeWrapper rawMenu = reader.raw.getNodeByIdentifier(menu.getIdentifier());
         GqlEditableMenu out = new GqlEditableMenu();
         out.uuid = menu.getIdentifier();
@@ -116,14 +117,14 @@ final class EditableReader {
         }
         String uuid = node.getProperty(property).getString();
         try {
-            Node found = withFallback.getNodeByIdentifier(uuid);
-            JCRNodeWrapper target = (JCRNodeWrapper) found;
+            JCRNodeWrapper target = (JCRNodeWrapper) raw.getNodeByIdentifier(uuid);
             String title = text(target, "jcr:title");
-            return new GqlTarget(uuid, target.getPath(), title != null ? title : target.getDisplayableName(),
-                    target.getPrimaryNodeTypeName(), true, exists(live, uuid));
+            String inFallback = fallback.equals(language) ? null : text((JCRNodeWrapper) fallbackRaw.getNodeByIdentifier(uuid), "jcr:title");
+            return new GqlTarget(uuid, target.getPath(), title == null && inFallback == null ? target.getDisplayableName() : title,
+                    inFallback, target.getPrimaryNodeTypeName(), true, exists(live, uuid));
         } catch (RepositoryException e) {
             // deleted, or not readable by the editor: the same answer, never the target's name
-            return new GqlTarget(uuid, null, null, null, false, false);
+            return new GqlTarget(uuid, null, null, null, null, false, false);
         }
     }
 
@@ -141,7 +142,9 @@ final class EditableReader {
         }
         Set<String> readable = JCRTemplate.getInstance().doExecute(
                 JahiaUserManagerService.getInstance().lookupUser(JahiaUserManagerService.GUEST_USERNAME).getJahiaUser(),
-                Constants.LIVE_WORKSPACE, live.getLocale(), (JCRCallback<Set<String>>) guest -> {
+                // In the site's default language: Jahia hides an item switched off in a language, and the
+                // "hidden in" chip already says so.
+                Constants.LIVE_WORKSPACE, siteDefault, (JCRCallback<Set<String>>) guest -> {
                     Set<String> found = new HashSet<>();
                     for (String id : ids) {
                         if (exists(guest, id)) {

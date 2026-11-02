@@ -1,0 +1,403 @@
+/*
+ * The Menus screen: Jahia's panel layout (header, white cards on the grey page), two columns that
+ * stack on a narrow pane, and the menu as a column of boxes, one per item, indented per level, as
+ * WordPress draws its menus. Moonstone tokens only; custom CSS is layout.
+ */
+.root {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    min-height: 0;
+    width: 100%;
+    min-width: 0;
+    contain: inline-size;
+    isolation: isolate;
+}
+
+.content {
+    display: grid;
+    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+    gap: var(--spacing-large, 24px);
+    align-items: start;
+    min-width: 0;
+    contain: inline-size;
+}
+
+@media (max-width: 1100px) {
+    .content {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-large, 24px);
+    min-width: 0;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium, 16px);
+    padding: var(--spacing-large, 24px);
+    border-radius: 4px;
+    background: var(--color-white);
+    box-shadow: 0 4px 8px 0 rgba(19, 28, 33, 0.2);
+    min-width: 0;
+}
+
+.cardHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--spacing-small, 8px);
+    flex-wrap: wrap;
+}
+
+.muted {
+    color: var(--color-gray_dark60, #5b6770);
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-small, 8px);
+    flex-wrap: wrap;
+}
+
+.toolbar > * {
+    flex-shrink: 0;
+}
+
+.dirtyDot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: var(--color-warning, #f3a712);
+}
+
+/* ---- Add items --------------------------------------------------------------------------------- */
+
+.panelBody {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small, 8px);
+    padding: var(--spacing-small, 8px) 0;
+}
+
+.pageList {
+    max-height: 320px;
+    overflow: auto;
+    border: 1px solid var(--color-gray_light40, #dde2e5);
+    border-radius: 4px;
+    padding: 4px 0;
+}
+
+.pageRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    min-height: 32px;
+    cursor: pointer;
+}
+
+.pageRow:hover {
+    background: var(--color-gray_light20, #f0f3f5);
+}
+
+.pageRow span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.actionsRow {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-small, 8px);
+}
+
+.fieldLabel {
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* ---- The menu ---------------------------------------------------------------------------------- */
+
+.tree {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.row {
+    position: relative;
+    min-width: 0;
+}
+
+/* One guide line per level, so nesting reads at a glance. */
+.row[data-depth="1"]::before,
+.row[data-depth="2"]::before {
+    content: "";
+    position: absolute;
+    top: -6px;
+    bottom: 50%;
+    left: calc(var(--indent) - 18px);
+    width: 12px;
+    border-left: 1px solid var(--color-gray_light40, #dde2e5);
+    border-bottom: 1px solid var(--color-gray_light40, #dde2e5);
+    border-bottom-left-radius: 4px;
+}
+
+.box {
+    margin-left: var(--indent);
+    border: 1px solid var(--color-gray_light40, #dde2e5);
+    border-radius: 4px;
+    background: var(--color-gray_light20, #f7f9fa);
+    transition: box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.box:hover {
+    border-color: var(--color-gray40, #b5bdc2);
+}
+
+.box[data-open="true"] {
+    background: var(--color-white);
+    border-color: var(--color-accent, #00a0e3);
+}
+
+.box[data-dragging="true"] {
+    opacity: 0.4;
+}
+
+.boxBar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 8px 0 4px;
+    min-width: 0;
+}
+
+.handle {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 32px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--color-gray_dark60, #5b6770);
+    cursor: grab;
+    flex-shrink: 0;
+}
+
+.handle:focus-visible {
+    outline: 2px solid var(--color-accent, #00a0e3);
+    outline-offset: 1px;
+}
+
+.kindIcon {
+    display: inline-grid;
+    place-items: center;
+    flex-shrink: 0;
+    color: var(--color-accent, #00a0e3);
+}
+
+.labelBlock {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.labelText {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.labelText[data-fallback="true"] {
+    font-style: italic;
+    color: var(--color-gray_dark60, #5b6770);
+}
+
+.subline {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-gray_dark60, #5b6770);
+}
+
+.badges {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.badges > span {
+    display: inline-flex;
+}
+
+.editor {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+    gap: var(--spacing-medium, 16px);
+    padding: var(--spacing-medium, 16px);
+    border-top: 1px solid var(--color-gray_light40, #dde2e5);
+}
+
+.editorWide {
+    grid-column: 1 / -1;
+}
+
+.languagesField {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.languagesField > legend {
+    float: left;
+    width: 100%;
+    padding: 0;
+}
+
+.languagesField > legend + * {
+    clear: both;
+}
+
+.languages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+}
+
+.checkLine {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.editorFoot {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-small, 8px);
+    flex-wrap: wrap;
+}
+
+.moves {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.targetLine {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.targetLine > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.overlay {
+    border: 1px solid var(--color-accent, #00a0e3);
+    border-radius: 4px;
+    background: var(--color-white);
+    box-shadow: 0 8px 16px rgba(19, 28, 33, 0.25);
+    cursor: grabbing;
+}
+
+.dropHint {
+    height: 0;
+    margin-left: var(--indent);
+    border-top: 2px solid var(--color-accent, #00a0e3);
+}
+
+.empty {
+    padding: var(--spacing-large, 24px);
+    border: 1px dashed var(--color-gray40, #b5bdc2);
+    border-radius: 4px;
+    text-align: center;
+    color: var(--color-gray_dark60, #5b6770);
+}
+
+/* ---- Preview: a neutral sketch of the menu, never the site's own styles ------------------------- */
+
+.preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 24px;
+    margin: 0;
+    padding: var(--spacing-medium, 16px);
+    list-style: none;
+    border-radius: 4px;
+    background: var(--color-gray_light20, #f7f9fa);
+}
+
+.preview ul {
+    margin: 4px 0 0;
+    padding-left: 14px;
+    list-style: none;
+    border-left: 2px solid var(--color-gray_light40, #dde2e5);
+}
+
+.preview li {
+    padding: 2px 0;
+}
+
+.previewSection {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 12px;
+    color: var(--color-gray_dark60, #5b6770);
+}
+
+.previewButton {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--color-accent, #00a0e3);
+    color: var(--color-white);
+}
+
+.previewHighlight {
+    font-weight: 700;
+    color: var(--color-accent, #00a0e3);
+}
+
+.placements {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dangerZone {
+    display: flex;
+    gap: var(--spacing-small, 8px);
+    flex-wrap: wrap;
+    padding-top: var(--spacing-small, 8px);
+    border-top: 1px solid var(--color-gray_light40, #dde2e5);
+}

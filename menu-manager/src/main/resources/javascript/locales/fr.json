@@ -1,0 +1,152 @@
+{
+  "menu-manager": {
+    "title": "Menus",
+    "header": {
+      "menu": "Menu",
+      "language": "Langue",
+      "newMenu": "Nouveau menu",
+      "save": "Enregistrer le menu",
+      "publish": "Publier",
+      "discard": "Annuler les modifications",
+      "lockedWhileDirty": "Enregistrez ou annulez d'abord vos modifications"
+    },
+    "status": {
+      "PUBLISHED": "Publié",
+      "MODIFIED": "Modifications non publiées",
+      "NOT_PUBLISHED": "Jamais publié",
+      "unsaved": "Modifications non enregistrées",
+      "other": "Non publié"
+    },
+    "empty": {
+      "title": "Aucun menu",
+      "text": "Un menu est une liste de pages, de sections et de liens que vous organisez vous-même, indépendamment de l'arborescence des pages. Créez-en un, puis placez-le sur une page avec le composant Menu.",
+      "create": "Créer un menu",
+      "menu": "Ce menu est vide. Ajoutez des pages, des sections ou des liens depuis la gauche, puis enregistrez."
+    },
+    "add": {
+      "title": "Ajouter des éléments",
+      "pages": "Pages",
+      "pagesHelp": "Cochez des pages, puis ajoutez-les à la fin du menu.",
+      "search": "Chercher une page",
+      "noPage": "Aucune page ne correspond.",
+      "addSelected": "Ajouter au menu",
+      "addSelected_plural": "Ajouter {{count}} pages au menu",
+      "section": "Section",
+      "sectionHelp": "Un titre sans lien, pour regrouper les éléments placés dessous.",
+      "sectionLabel": "Titre",
+      "internal": "Lien interne",
+      "internalHelp": "Tout contenu de la plateforme : une page d'un autre site, une actualité, un fichier.",
+      "choose": "Choisir un contenu",
+      "external": "Lien externe",
+      "externalHelp": "Une adresse hors du site, commençant par https://, http://, mailto: ou tel:.",
+      "url": "Adresse",
+      "linkLabel": "Libellé",
+      "add": "Ajouter au menu"
+    },
+    "structure": {
+      "title": "Structure du menu",
+      "help": "Faites glisser un élément pour le déplacer ; glissez-le vers la droite pour le placer sous l'élément au-dessus. Trois niveaux au plus.",
+      "items": "{{count}} élément",
+      "items_plural": "{{count}} éléments"
+    },
+    "kind": {
+      "page": "Page",
+      "section": "Section",
+      "internalLink": "Lien interne",
+      "externalLink": "Lien externe",
+      "subpage": "Sous-page"
+    },
+    "badge": {
+      "fallback": "Affiché en {{lang}}",
+      "fallbackHelp": "Pas de libellé dans cette langue : les visiteurs voient le libellé {{lang}}.",
+      "notPublic": "Non public",
+      "notPublicHelp": "Les visiteurs non connectés ne voient pas cet élément : ils ne peuvent lire ni l'élément ni sa cible.",
+      "notPublished": "Cible non publiée",
+      "notPublishedHelp": "La cible n'est pas publiée : les visiteurs ne voient pas cet élément tant qu'elle ne l'est pas.",
+      "unavailable": "Cible indisponible",
+      "unavailableHelp": "La cible a été supprimée, ou vous ne pouvez pas la lire : les visiteurs ne voient pas cet élément.",
+      "hiddenIn": "Masqué en {{langs}}",
+      "subpages": "+ sous-pages"
+    },
+    "editor": {
+      "edit": "Modifier {{label}}",
+      "close": "Fermer",
+      "label": "Libellé",
+      "labelPlaceholderTitle": "Titre de la page : {{title}}",
+      "labelPlaceholderFallback": "{{lang}} : {{label}}",
+      "description": "Description",
+      "descriptionHelp": "Affichée par les dispositions qui ont la place, comme les colonnes.",
+      "style": "Style",
+      "styles": {
+        "default": "Normal",
+        "highlight": "Mis en avant",
+        "button": "Bouton"
+      },
+      "includeSubpages": "Inclure les sous-pages de la page",
+      "newTab": "Ouvrir dans un nouvel onglet",
+      "url": "Adresse",
+      "target": "Cible",
+      "change": "Changer",
+      "visibleIn": "Affiché en",
+      "remove": "Supprimer",
+      "removeConfirm": "Supprimer {{label}} et les éléments placés dessous ?",
+      "move": "Déplacer",
+      "up": "Monter d'un cran",
+      "down": "Descendre d'un cran",
+      "under": "Sous {{label}}",
+      "out": "Sortir de sous {{label}}",
+      "toTop": "Tout en haut"
+    },
+    "settings": {
+      "title": "Réglages du menu",
+      "name": "Nom du menu",
+      "fallback": "Langue de repli",
+      "fallbackHelp": "Les libellés absents d'une langue s'affichent dans celle-ci.",
+      "fallbackDefault": "Langue par défaut du site ({{lang}})",
+      "placedOn": "Où ce menu est placé",
+      "notPlaced": "Placé sur aucune page pour l'instant : ajoutez un composant Menu à une page et choisissez ce menu.",
+      "duplicate": "Dupliquer",
+      "duplicateTitle": "{{title}} (copie)",
+      "delete": "Supprimer le menu",
+      "deleteConfirm": "Supprimer le menu {{title}} ? Les pages qui l'affichent n'afficheront plus rien à sa place une fois la suppression publiée.",
+      "apply": "Appliquer"
+    },
+    "preview": {
+      "title": "Aperçu en {{lang}}",
+      "help": "Le menu tel qu'il s'affichera, langue de repli appliquée. Sur le site, les éléments qu'un visiteur ne peut pas lire sont retirés.",
+      "empty": "Rien à afficher pour l'instant."
+    },
+    "newMenu": {
+      "title": "Nouveau menu",
+      "name": "Nom du menu",
+      "placeholder": "Menu principal",
+      "create": "Créer",
+      "cancel": "Annuler"
+    },
+    "confirm": {
+      "title": "Confirmation",
+      "ok": "Confirmer",
+      "cancel": "Annuler"
+    },
+    "toast": {
+      "saved": "Menu enregistré",
+      "published": "Menu publié",
+      "created": "Menu créé",
+      "deleted": "Menu supprimé",
+      "duplicated": "Menu dupliqué"
+    },
+    "error": {
+      "conflict": "Quelqu'un a enregistré ce menu depuis que vous l'avez ouvert. Rechargez-le pour voir ses modifications, puis refaites les vôtres.",
+      "reload": "Recharger",
+      "tooDeep": "Un menu a trois niveaux au plus.",
+      "tooMany": "Un menu contient 500 éléments au plus.",
+      "unknownValue": "Un élément a une valeur non autorisée.",
+      "tooLong": "Un libellé, une description ou un nom est trop long.",
+      "noTarget": "Un élément n'a pas de page ou de cible : choisissez-en une.",
+      "badTarget": "Un élément pointe vers un contenu qui n'existe plus ou que vous ne pouvez pas lire.",
+      "badUrl": "Un lien externe doit commencer par https://, http://, mailto: ou tel:.",
+      "sectionLabel": "Une nouvelle section a besoin d'un titre.",
+      "generic": "L'action a échoué. Réessayez ; si elle échoue encore, prévenez votre administrateur."
+    }
+  }
+}

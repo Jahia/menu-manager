@@ -145,7 +145,8 @@ public final class MenuTree {
             case EXTERNAL_LINK -> url = UrlPolicy.check(text(o, "url"))
                     .orElseThrow(() -> new MenuException(MenuException.BAD_URL, "External address not allowed"));
             case SECTION -> {
-                if (label == null) {
+                // A new section needs a label; a stored one may have none in this language (it falls back).
+                if (label == null && id == null) {
                     throw new MenuException(MenuException.SECTION_LABEL, "Section without a label");
                 }
             }

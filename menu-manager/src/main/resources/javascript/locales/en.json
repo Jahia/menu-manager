@@ -1,0 +1,152 @@
+{
+  "menu-manager": {
+    "title": "Menus",
+    "header": {
+      "menu": "Menu",
+      "language": "Language",
+      "newMenu": "New menu",
+      "save": "Save menu",
+      "publish": "Publish",
+      "discard": "Discard changes",
+      "lockedWhileDirty": "Save or discard your changes first"
+    },
+    "status": {
+      "PUBLISHED": "Published",
+      "MODIFIED": "Changes not published",
+      "NOT_PUBLISHED": "Never published",
+      "unsaved": "Unsaved changes",
+      "other": "Not published"
+    },
+    "empty": {
+      "title": "No menu yet",
+      "text": "A menu is a list of pages, sections and links that you arrange yourself, independently of the page tree. Create one, then place it on a page with the Menu component.",
+      "create": "Create a menu",
+      "menu": "This menu is empty. Add pages, sections or links from the left, then save."
+    },
+    "add": {
+      "title": "Add items",
+      "pages": "Pages",
+      "pagesHelp": "Tick pages, then add them at the end of the menu.",
+      "search": "Find a page",
+      "noPage": "No page matches.",
+      "addSelected": "Add to menu",
+      "addSelected_plural": "Add {{count}} pages to menu",
+      "section": "Section",
+      "sectionHelp": "A heading with no link, to group the items under it.",
+      "sectionLabel": "Heading",
+      "internal": "Internal link",
+      "internalHelp": "Any content of the platform: a page of another site, a news item, a file.",
+      "choose": "Choose content",
+      "external": "External link",
+      "externalHelp": "An address outside the site, starting with https://, http://, mailto: or tel:.",
+      "url": "Address",
+      "linkLabel": "Label",
+      "add": "Add to menu"
+    },
+    "structure": {
+      "title": "Menu structure",
+      "help": "Drag an item to reorder it; drag it to the right to place it under the item above. Three levels at most.",
+      "items": "{{count}} item",
+      "items_plural": "{{count}} items"
+    },
+    "kind": {
+      "page": "Page",
+      "section": "Section",
+      "internalLink": "Internal link",
+      "externalLink": "External link",
+      "subpage": "Subpage"
+    },
+    "badge": {
+      "fallback": "Shown in {{lang}}",
+      "fallbackHelp": "No label in this language: visitors see the {{lang}} label.",
+      "notPublic": "Not public",
+      "notPublicHelp": "Visitors who are not signed in do not see this item: they cannot read it or its target.",
+      "notPublished": "Target not published",
+      "notPublishedHelp": "The target is not published: visitors do not see this item until it is.",
+      "unavailable": "Target unavailable",
+      "unavailableHelp": "The target was deleted, or you cannot read it: visitors do not see this item.",
+      "hiddenIn": "Hidden in {{langs}}",
+      "subpages": "+ subpages"
+    },
+    "editor": {
+      "edit": "Edit {{label}}",
+      "close": "Close",
+      "label": "Label",
+      "labelPlaceholderTitle": "Page title: {{title}}",
+      "labelPlaceholderFallback": "{{lang}}: {{label}}",
+      "description": "Description",
+      "descriptionHelp": "Shown by layouts with room for it, such as columns.",
+      "style": "Style",
+      "styles": {
+        "default": "Normal",
+        "highlight": "Highlighted",
+        "button": "Button"
+      },
+      "includeSubpages": "Include the page's subpages",
+      "newTab": "Open in a new tab",
+      "url": "Address",
+      "target": "Target",
+      "change": "Change",
+      "visibleIn": "Shown in",
+      "remove": "Remove",
+      "removeConfirm": "Remove {{label}} and the items under it?",
+      "move": "Move",
+      "up": "Up one",
+      "down": "Down one",
+      "under": "Under {{label}}",
+      "out": "Out from under {{label}}",
+      "toTop": "To the top"
+    },
+    "settings": {
+      "title": "Menu settings",
+      "name": "Menu name",
+      "fallback": "Fallback language",
+      "fallbackHelp": "Labels missing in a language show in this one.",
+      "fallbackDefault": "Site default ({{lang}})",
+      "placedOn": "Where this menu is placed",
+      "notPlaced": "Not placed on any page yet: add a Menu component to a page and choose this menu.",
+      "duplicate": "Duplicate",
+      "duplicateTitle": "{{title}} (copy)",
+      "delete": "Delete menu",
+      "deleteConfirm": "Delete the menu {{title}}? Pages that show it will show nothing in its place once it is published.",
+      "apply": "Apply"
+    },
+    "preview": {
+      "title": "Preview in {{lang}}",
+      "help": "The menu as it will show, with the fallback language applied. Items a visitor cannot read are left out on the site.",
+      "empty": "Nothing to show yet."
+    },
+    "newMenu": {
+      "title": "New menu",
+      "name": "Menu name",
+      "placeholder": "Main menu",
+      "create": "Create",
+      "cancel": "Cancel"
+    },
+    "confirm": {
+      "title": "Please confirm",
+      "ok": "Confirm",
+      "cancel": "Cancel"
+    },
+    "toast": {
+      "saved": "Menu saved",
+      "published": "Menu published",
+      "created": "Menu created",
+      "deleted": "Menu deleted",
+      "duplicated": "Menu duplicated"
+    },
+    "error": {
+      "conflict": "Someone saved this menu since you opened it. Reload it to see their changes, then make yours again.",
+      "reload": "Reload",
+      "tooDeep": "A menu has three levels at most.",
+      "tooMany": "A menu holds 500 items at most.",
+      "unknownValue": "An item has a value that is not allowed.",
+      "tooLong": "A label, a description or a name is too long.",
+      "noTarget": "An item has no page or target: choose one.",
+      "badTarget": "An item points to content that no longer exists or that you cannot read.",
+      "badUrl": "An external link must start with https://, http://, mailto: or tel:.",
+      "sectionLabel": "A new section needs a heading.",
+      "generic": "The action failed. Try again; if it fails again, tell your administrator."
+    }
+  }
+}

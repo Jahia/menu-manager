@@ -17,6 +17,8 @@
         <jahia-module-type>module</jahia-module-type>
         <!-- The 8.2 parent sets <source>11</source> on the compiler plugin: release takes precedence. -->
         <maven.compiler.release>17</maven.compiler.release>
+        <yarn.arguments>build:production</yarn.arguments>
+        <!-- Read by surefire and by the front-end unit tests (yarn test): -DskipTests skips both. -->
         <skipTests>false</skipTests>
         <graphql-dxm-provider.version>3.5.1</graphql-dxm-provider.version>
         <graphql-java-annotations.version>21.1</graphql-java-annotations.version>
@@ -190,9 +192,59 @@
                 </configuration>
             </plugin>
             <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>src/main/resources/javascript/apps</directory>
+                            <includes><include>*</include></includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
+            </plugin>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>2.0.2</version>
+                <executions>
+                    <execution>
+                        <id>install node and yarn</id>
+                        <phase>generate-resources</phase>
+                        <goals><goal>install-node-and-yarn</goal></goals>
+                        <configuration>
+                            <nodeVersion>v22.21.0</nodeVersion>
+                            <yarnVersion>v1.22.22</yarnVersion>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>yarn install</id>
+                        <phase>generate-resources</phase>
+                        <goals><goal>yarn</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>yarn build</id>
+                        <phase>generate-resources</phase>
+                        <goals><goal>yarn</goal></goals>
+                        <configuration>
+                            <arguments>${yarn.arguments}</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>yarn test</id>
+                        <phase>test</phase>
+                        <goals><goal>yarn</goal></goals>
+                        <configuration>
+                            <arguments>test</arguments>
+                            <skip>${skipTests}</skip>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

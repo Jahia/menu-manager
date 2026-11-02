@@ -15,14 +15,16 @@ public class GqlTarget {
     private final String uuid;
     private final String path;
     private final String title;
+    private final String fallbackTitle;
     private final String nodeType;
     private final boolean available;
     private final boolean inLive;
 
-    GqlTarget(String uuid, String path, String title, String nodeType, boolean available, boolean inLive) {
+    GqlTarget(String uuid, String path, String title, String fallbackTitle, String nodeType, boolean available, boolean inLive) {
         this.uuid = uuid;
         this.path = path;
         this.title = title;
+        this.fallbackTitle = fallbackTitle;
         this.nodeType = nodeType;
         this.available = available;
         this.inLive = inLive;
@@ -40,10 +42,16 @@ public class GqlTarget {
         return path;
     }
 
-    /** @return title of the target in the language, else the fallback language, else its name; null when not available */
+    /** @return title of the target in the edited language, else its name when it has no title in either language; null when not available */
     @GraphQLField @GraphQLName("title")
     public String title() {
         return title;
+    }
+
+    /** @return title of the target in the fallback language, or null */
+    @GraphQLField @GraphQLName("fallbackTitle")
+    public String fallbackTitle() {
+        return fallbackTitle;
     }
 
     /** @return primary node type of the target, or null when it is not available */

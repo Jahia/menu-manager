@@ -31,3 +31,18 @@
 - Visitors: `menuManager.resolvedMenu` answers through the module's API scope with the site as `Origin`; without it, and for `editableMenu`, `saveMenu` and `jcr`, `Permission denied`.
 - Access rights: an item whose ACL inheritance is broken disappears from the guest's menu, stays in root's, and the editor view reports `publicAccess: false`.
 - Left on the local stack for phase 3: the test menu `/sites/gba-hk/menus/main-menu-test` (published).
+
+## 2026-11-02: phase 3, the Menus screen (local stack, gba-hk)
+
+| Topic | Decision or finding |
+|---|---|
+| Place | jContent > Additional > Menus (`adminRoute` on `jcontent:85`), gated by jContent with `manageMenus` and the module enabled on the site; remounts per site |
+| Layout | Jahia's panel layout; left: Add items (pages with search and ticks, section, internal link through `CE_API.openPicker` type `editoriallink`, external link); right: structure, preview, settings. Stacks under 1100 px |
+| Editing language | Opens in jContent's content language; menu and language pickers locked while there are unsaved changes |
+| Label shown to the editor | The server's order (label, target title, then both in the fallback language): `GqlTarget.title` is the edited language only, `fallbackTitle` the fallback language |
+| Not public chip | The guest check runs in the site's default language: Jahia hides an item switched off in a language (`j:invalidLanguages`) at the JCR level, and the "Hidden in" chip says so |
+| Apollo cache | jContent's cache keys JCR nodes on `uuid` + `workspace`: every node selection asks for both |
+| Icon | `toIconComponent` needs a filled SVG with width and height (a stroke icon renders as a speck) |
+| LayoutContent | `content` is deprecated in Moonstone 2.20 and clashes with the div attribute in the types: pass children |
+| Checked in the browser | open and edit an item, Move links (up, under), Save (revision, order read back), switch to zh_HK (Chinese titles, fallback chips, hidden chip), external link validation, Discard, Publish (live read as guest), New menu, Delete with confirmation |
+| Not checked | Pointer drag and drop: the browser pane runs as a hidden page and dnd-kit cancels drags on visibility changes; the drop logic is unit-tested, the real drag goes into the Cypress suite (phase 6) |
