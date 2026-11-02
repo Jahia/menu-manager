@@ -17,7 +17,7 @@
     "@jahia/cypress": "^8.9.0",
     "axe-core": "^4.10.2",
     "cross-fetch": "^4.1.0",
-    "cypress": "^13.15.0",
+    "cypress": "^15.21.1",
     "cypress-axe": "^1.5.0",
     "cypress-multi-reporters": "^2.0.4",
     "cypress-wait-until": "^3.0.2",
