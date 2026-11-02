@@ -88,33 +88,6 @@
     padding: var(--spacing-small, 8px) 0;
 }
 
-.pageList {
-    max-height: 320px;
-    overflow: auto;
-    border: 1px solid var(--color-gray_light40, #dde2e5);
-    border-radius: 4px;
-    padding: 4px 0;
-}
-
-.pageRow {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 2px 8px;
-    min-height: 32px;
-    cursor: pointer;
-}
-
-.pageRow:hover {
-    background: var(--color-gray_light20, #f0f3f5);
-}
-
-.pageRow span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 .actionsRow {
     display: flex;
     justify-content: flex-end;

@@ -26,9 +26,7 @@
     "add": {
       "title": "Add items",
       "pages": "Pages",
-      "pagesHelp": "Tick pages, then add them at the end of the menu.",
-      "search": "Find a page",
-      "noPage": "No page matches.",
+      "pagesHelp": "Choose pages in the site's tree, then add them at the end of the menu.",
       "addSelected": "Add to menu",
       "addSelected_plural": "Add {{count}} pages to menu",
       "section": "Section",
@@ -41,7 +39,8 @@
       "externalHelp": "An address outside the site, starting with https://, http://, mailto: or tel:.",
       "url": "Address",
       "linkLabel": "Label",
-      "add": "Add to menu"
+      "add": "Add to menu",
+      "noChoiceTree": "The page tree of jContent is not available in this version of jContent: add pages as internal links."
     },
     "structure": {
       "title": "Menu structure",

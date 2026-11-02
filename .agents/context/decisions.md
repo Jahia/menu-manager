@@ -74,3 +74,13 @@
 | A, `feat/nav-menu-component-areas` | `ctpl:pageArea`, `ctpl:headerArea`, `ctpl:footerArea` take a second residual line `+ * (jmix:navMenuComponent)` | Installs over content with no major-change refusal; the page area accepts `mnu:navigation`; a menu placed directly in the main area renders on live |
 | B, `feat/header-menu-source` | `ctpl:mainNavigation` gets `menuSource` (`pageTree`, `menu`) and `menu` (weakreference with `choicelist[nodes='$currentSite/menus;mnu:menu']`, no type constraint: Menu Manager's type); the view reads `menuManager.resolvedMenu` (no current page: the header is shared, the script marks it) and maps the items onto the page-tree items, so the dropdown and mega styles, the script and the promotion slot are unchanged; top-level promotions in the mega style; page tree plus an edit-mode note when the menu cannot be read | Header in the mega style from the custom menu on live as guest: items, promotion, new-tab text, the guest-locked item left out; root then guest: no leak |
 | Open | Whether `choicelist[nodes=...;mnu:menu]` behaves on an instance without Menu Manager (the form's menu list) is not checked: it needs an instance without the module |
+
+## 2026-11-02: Jahia's own selector and view mechanism (user)
+
+| Topic | Decision |
+|---|---|
+| Pages in the Menus screen | jContent's **ChoiceTree** selector (the Content Editor's tree behind categories), read from the registry (`registry.get('selectorType', 'ChoiceTree').cmp`) with `rootPath: /sites/{site}` and `types: jnt:page`, several pages at once; replaces the hand-made list of ticks. Its children sort by label, as in the content forms |
+| Layouts | **One view, one file** per rendering: `default.server.tsx` (horizontal bar), `mega.server.tsx`, `vertical.server.tsx`, `columns.server.tsx`; what they share sits in `parts.tsx`, not registered. The editor picks one in Layout > View (`j:view`): `jmix:renderable` is a supertype of `mnu:navigation`, so the field has no switch. The `layout` property is gone (never released; the local components were moved to `j:view` first, both workspaces) |
+| View labels | `jmix_renderable.j_view.<view>` in the resource bundle of the type's module (menu-manager); the core `link` view stays in the list, as on every content |
+| Removing `layout` | A removal is a major change even with no value left: the local stack took it through provisioning with `ignoreChecks: true`, which an unreleased type may do and a released one never |
+| Resource bundles | Every non-ASCII character is a `\uXXXX` escape (native2ascii reads ISO-8859-1: every French label read `affichÃ©s`); `ResourceBundlesTest` fails the build on a non-ASCII line |

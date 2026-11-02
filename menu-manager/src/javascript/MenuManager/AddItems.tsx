@@ -1,7 +1,8 @@
-import React, {useMemo, useState} from 'react';
+import React, {ComponentType, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useQuery} from '@apollo/client';
-import {Accordion, AccordionItem, Button, Checkbox, Input, Link, Loader, OpenInNew, Page, Text, Typography} from '@jahia/moonstone';
+import {Accordion, AccordionItem, Button, Input, Link, OpenInNew, Page, Text, Typography} from '@jahia/moonstone';
+import {registry} from '@jahia/ui-extender';
 import {NS} from '../i18n';
 import {PAGES} from './graphql';
 import {Item, newKey, NO_PROMO, Target, URL_OK} from './tree';
@@ -27,7 +28,7 @@ const blank = (kind: Item['kind'], patch: Partial<Item>): Item => ({
 
 /**
  * The left column, as WordPress has it: one panel per kind of item, each adding at the end of the
- * menu. Pages are ticked from the site's page tree (searchable); a section is a heading; an internal
+ * menu. Pages are chosen in the site's page tree with jContent's ChoiceTree; a section is a heading; an internal
  * link is any content, chosen with jContent's picker; an external link is an address.
  */
 export const AddItems = ({siteKey, language, onAdd, pickContent}: AddItemsProps): JSX.Element => {
@@ -54,18 +55,38 @@ export const AddItems = ({siteKey, language, onAdd, pickContent}: AddItemsProps)
     );
 };
 
+/** The props jContent's ChoiceTree selector takes (Content Editor selector type contract). */
+interface ChoiceTreeProps {
+    id: string;
+    field: {name: string; multiple: boolean; readOnly: boolean; selectorOptions: {name: string; value: string}[]};
+    value: string[];
+    editorContext: {site: string; lang: string};
+    onChange: (value: string[] | null) => void;
+    onBlur: () => void;
+}
+
+/**
+ * Pages are chosen with jContent's own ChoiceTree selector (the one behind categories): a searchable
+ * dropdown of the site's page tree, several pages at once. It is read from the Content Editor registry,
+ * where jContent registers it, so the screen shows what editors know from the content forms.
+ */
 const PagesPanel = ({siteKey, language, onAdd}: {siteKey: string; language: string; onAdd: (items: Item[]) => void}): JSX.Element => {
     const {t} = useTranslation(NS);
     const home = `/sites/${siteKey}/home`;
-    const {data, loading} = useQuery(PAGES, {variables: {path: home, language}, fetchPolicy: 'cache-and-network'});
-    const [search, setSearch] = useState('');
+    const {data} = useQuery(PAGES, {variables: {path: home, language}, fetchPolicy: 'cache-and-network'});
     const [selected, setSelected] = useState<string[]>([]);
+    const ChoiceTree = (registry.get('selectorType', 'ChoiceTree') as {cmp?: ComponentType<ChoiceTreeProps>} | undefined)?.cmp;
+    const field = useMemo(() => ({
+        name: 'mnu-pages',
+        multiple: true,
+        readOnly: false,
+        selectorOptions: [{name: 'rootPath', value: '/sites/{site}'}, {name: 'types', value: 'jnt:page'}]
+    }), []);
+    // In the order of the site's page tree, with what a menu item shows of its page
     const pages: PageNode[] = useMemo(() => {
         const root = data?.jcr?.nodeByPath;
         return root ? [root, ...root.descendants.nodes] : [];
     }, [data]);
-    const visible = pages.filter(p => !search || p.displayName.toLowerCase().includes(search.toLowerCase()));
-    const depth = (p: PageNode): number => p.path.slice(home.length).split('/').filter(Boolean).length;
 
     const add = (): void => {
         onAdd(pages.filter(p => selected.includes(p.uuid)).map(p => blank('page', {
@@ -77,23 +98,21 @@ const PagesPanel = ({siteKey, language, onAdd}: {siteKey: string; language: stri
     return (
         <div className={styles.panelBody}>
             <Typography variant="caption" className={styles.muted}>{t('add.pagesHelp')}</Typography>
-            <Input variant="search" value={search} placeholder={t('add.search')} aria-label={t('add.search')}
-                   onChange={e => setSearch(e.target.value)} onClear={() => setSearch('')}/>
-            <div className={styles.pageList} role="group" aria-label={t('add.pages')}>
-                {loading && !data && <Loader size="small"/>}
-                {!loading && visible.length === 0 && <Typography className={styles.muted}>{t('add.noPage')}</Typography>}
-                {visible.map(p => (
-                    <label key={p.uuid} className={styles.pageRow} style={{paddingLeft: search ? 8 : 8 + depth(p) * 16}} title={p.path}>
-                        <Checkbox
-                            checked={selected.includes(p.uuid)}
-                            onChange={(_e, _v, checked) => setSelected(checked ? [...selected, p.uuid] : selected.filter(u => u !== p.uuid))}
-                        />
-                        <span><Typography>{p.displayName}</Typography></span>
-                    </label>
-                ))}
-            </div>
+            {ChoiceTree ? (
+                <div data-mnu-role="page-choice">
+                    <ChoiceTree
+                        id="mnu-add-pages"
+                        field={field}
+                        value={selected}
+                        editorContext={{site: siteKey, lang: language}}
+                        onChange={value => setSelected(value ?? [])}
+                        onBlur={() => undefined}
+                    />
+                </div>
+            ) : <Typography className={styles.muted}>{t('add.noChoiceTree')}</Typography>}
             <div className={styles.actionsRow}>
-                <Button color="accent" label={selected.length ? t('add.addSelected', {count: selected.length}) : t('add.add')} isDisabled={selected.length === 0} onClick={add}/>
+                <Button color="accent" label={selected.length ? t('add.addSelected', {count: selected.length}) : t('add.add')}
+                        isDisabled={selected.length === 0 || pages.length === 0} onClick={add}/>
             </div>
         </div>
     );

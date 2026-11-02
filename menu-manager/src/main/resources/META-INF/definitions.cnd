@@ -78,9 +78,8 @@
 // Shows one menu of the site. jmix:navMenuComponent is Jahia's marker of navigation components: a
 // template set whose areas accept it (classic-templates) takes this component without depending on
 // this module. jcr:title is the menu's accessible name (the <nav> label), never shown. Rendered by
-// the menu-manager-views module.
-[mnu:navigation] > jnt:content, mix:title, mnumix:component, jmix:navMenuComponent
+// the menu-manager-views module, one view per layout (horizontal bar by default, mega menu, vertical
+// list, columns), chosen in Layout > View: jmix:renderable is a supertype, so the field is always there.
+[mnu:navigation] > jnt:content, mix:title, mnumix:component, jmix:navMenuComponent, jmix:renderable
  - menu (weakreference, choicelist[nodes='$currentSite/menus;mnu:menu']) mandatory < 'mnu:menu'
- // cnd-check-ignore(missingI18n): a choice among fixed values, labelled in the resource bundles
- - layout (string, choicelist[resourceBundle]) = 'horizontal' autocreated indexed=no < 'horizontal', 'mega', 'vertical', 'columns'
  - maxDepth (long) = '3' autocreated indexed=no < '[1,3]'

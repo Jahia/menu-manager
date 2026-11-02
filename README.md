@@ -17,21 +17,24 @@ Menus built by hand in jContent, independent of the page tree, for Jahia 8.2.
 
 1. Enable **Menu Manager** and **Menu Manager views** on the site, and grant **manageMenus** (under
    site-admin) to the roles that build menus.
-2. jContent > **Additional > Menus**: create a menu, add pages (tick them, optionally with their
-   subpages), sections, internal links (any content, through the picker) and external links; drag
+2. jContent > **Additional > Menus**: create a menu, add pages (chosen in the site's tree with
+   jContent's own tree selector, optionally with their subpages), sections, internal links (any content, through the picker) and external links; drag
    items to order and nest them (or use each item's Move links); translate the labels by switching
    the language; **Save**, then **Publish**.
 3. Add the **Menu** component to a page (a Free zone on a classic-templates site), choose the menu,
-   its layout, the levels shown and its accessible name.
+   the levels shown and its accessible name, and its layout in **Layout > View**.
 
 ## Layouts
 
-| Layout | What it draws |
+Each layout is a view of its own (one file in `menu-manager-views/src/components/Navigation/`),
+picked with Jahia's view field (`j:view`) like any other content; without a view, the horizontal bar.
+
+| View | What it draws |
 |---|---|
-| Horizontal bar | Top-level items in a bar; an item with children opens a dropdown panel (button, Escape, click outside; hover and focus without JavaScript); a **Menu** button under 768 px |
-| Mega menu | The same bar; each panel takes the menu's full width: the item and its description, one column per child with its own items, and the item's **promotion** |
-| Vertical list | Every level nested |
-| Columns | Top-level items as columns (a footer) |
+| Horizontal bar (default) | Top-level items in a bar; an item with children opens a dropdown panel (button, Escape, click outside; hover and focus without JavaScript); a **Menu** button under 768 px |
+| Mega menu (`mega`) | The same bar; each panel takes the menu's full width: the item and its description, one column per child with its own items, and the item's **promotion** |
+| Vertical list (`vertical`) | Every level nested |
+| Columns (`columns`) | Top-level items as columns (a footer) |
 
 ## Promotions
 

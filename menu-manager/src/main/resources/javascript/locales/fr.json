@@ -26,9 +26,7 @@
     "add": {
       "title": "Ajouter des éléments",
       "pages": "Pages",
-      "pagesHelp": "Cochez des pages, puis ajoutez-les à la fin du menu.",
-      "search": "Chercher une page",
-      "noPage": "Aucune page ne correspond.",
+      "pagesHelp": "Choisissez des pages dans l'arborescence du site, puis ajoutez-les à la fin du menu.",
       "addSelected": "Ajouter au menu",
       "addSelected_plural": "Ajouter {{count}} pages au menu",
       "section": "Section",
@@ -41,7 +39,8 @@
       "externalHelp": "Une adresse hors du site, commençant par https://, http://, mailto: ou tel:.",
       "url": "Adresse",
       "linkLabel": "Libellé",
-      "add": "Ajouter au menu"
+      "add": "Ajouter au menu",
+      "noChoiceTree": "L'arborescence des pages de jContent n'est pas disponible dans cette version de jContent : ajoutez les pages comme liens internes."
     },
     "structure": {
       "title": "Structure du menu",
