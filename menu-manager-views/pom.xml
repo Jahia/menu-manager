@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Thin Maven wrapper around the Vite build of the views module, so Maven builds the whole repository
+  and the Jahia CI actions handle it like any other module. It installs Node and Corepack (which
+  provides the Yarn version package.json names), runs yarn install, the unit tests and yarn build,
+  and attaches dist/package.tgz as the deployable artifact. No Java is compiled.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>menu-manager-root</artifactId>
+        <groupId>org.jahia.community</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>menu-manager-views</artifactId>
+    <name>Menu Manager views</name>
+    <packaging>pom</packaging>
+    <description>The views of the Menu Manager component: a horizontal bar with dropdowns, a vertical list, columns.</description>
+
+    <properties>
+        <sonar.sources>src,static,package.json,pom.xml</sonar.sources>
+        <skipTests>false</skipTests>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <fileset><directory>dist</directory></fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>2.0.2</version>
+                <configuration>
+                    <nodeVersion>v22.21.0</nodeVersion>
+                    <corepackVersion>0.34.0</corepackVersion>
+                    <installDirectory>target</installDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>install node and corepack</id>
+                        <phase>initialize</phase>
+                        <goals><goal>install-node-and-corepack</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>yarn install</id>
+                        <phase>initialize</phase>
+                        <goals><goal>corepack</goal></goals>
+                        <configuration><arguments>yarn install --immutable</arguments></configuration>
+                    </execution>
+                    <execution>
+                        <id>yarn test</id>
+                        <phase>test</phase>
+                        <goals><goal>corepack</goal></goals>
+                        <configuration>
+                            <arguments>yarn test:unit</arguments>
+                            <skip>${skipTests}</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- prepare-package: dist/package.tgz exists before the copy below, in package -->
+                        <id>yarn build</id>
+                        <phase>prepare-package</phase>
+                        <goals><goal>corepack</goal></goals>
+                        <configuration><arguments>yarn build</arguments></configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-tgz-artifact</id>
+                        <goals><goal>attach-artifact</goal></goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>dist/package.tgz</file>
+                                    <type>tgz</type>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <!-- Copy dist/package.tgz to target/, where the CI actions look for it -->
+                        <id>copy-dist-package</id>
+                        <phase>package</phase>
+                        <goals><goal>run</goal></goals>
+                        <configuration>
+                            <target>
+                                <copy file="dist/package.tgz" tofile="${project.build.directory}/${project.build.finalName}.tgz"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

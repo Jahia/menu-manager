@@ -46,3 +46,15 @@
 | LayoutContent | `content` is deprecated in Moonstone 2.20 and clashes with the div attribute in the types: pass children |
 | Checked in the browser | open and edit an item, Move links (up, under), Save (revision, order read back), switch to zh_HK (Chinese titles, fallback chips, hidden chip), external link validation, Discard, Publish (live read as guest), New menu, Delete with confirmation |
 | Not checked | Pointer drag and drop: the browser pane runs as a hidden page and dnd-kit cancels drags on visibility changes; the drop logic is unit-tested, the real drag goes into the Cypress suite (phase 6) |
+
+## 2026-11-02: phase 4, the views (local stack, exactlytest)
+
+| Topic | Decision or finding |
+|---|---|
+| Data | One server-side `useGQLQuery` on `menuManager.resolvedMenu`, as the visitor: on live, an anonymous visitor's page leaves out an item locked to guests and a target never published; the API scope is in place, whether the server-side call needs it is not isolated yet |
+| Cache | `cache.mainResource` (current page), the resolver's dependency list declared one by one (`/*` entries as a subtree regexp); root then guest on the same page: no leak |
+| URLs | `buildNodeUrl` on the target read with the render session; external addresses as the resolver checked them |
+| Layouts | Horizontal: disclosure buttons and panels (static/js/menu-manager.js: one open at a time, Escape, click outside; without it, hover and focus-within), a Menu button under 768 px. Vertical: nested lists. Columns: a grid. Edit mode: every level open, a note naming the menu |
+| Tokens | `--mnu-*`, defaulting to the classic-templates tokens, then neutral values |
+| Placement today | classic-templates areas refuse it until phase 5; its Free zone accepts it |
+| Trap | The query's third level selects no `children`: the view normalises every level to a list (a first render failed with `Cannot read property 'some' of undefined`, a 500 for the whole page) |

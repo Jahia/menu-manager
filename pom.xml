@@ -28,10 +28,11 @@
         <tag>HEAD</tag>
     </scm>
 
-    <!-- The Java bundle (content types, resolver, GraphQL, the jContent Menus screen). The JavaScript
-         module with the views of the menu component (menu-manager-views) joins in phase 4. -->
+    <!-- The Java bundle (content types, resolver, GraphQL, the jContent Menus screen), then the
+         JavaScript module with the views of the menu component, which depends on it. -->
     <modules>
         <module>menu-manager</module>
+        <module>menu-manager-views</module>
     </modules>
 
     <repositories>

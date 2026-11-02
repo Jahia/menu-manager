@@ -1,0 +1,14 @@
+{
+  "nav": {
+    "label": "Menu",
+    "toggle": "Menu",
+    "submenu": "Show the {{label}} submenu",
+    "newTab": "(opens in a new tab)"
+  },
+  "edit": {
+    "noMenu": "Choose a menu in this component's settings: until then visitors see nothing here.",
+    "unreadable": "The chosen menu no longer exists, or you cannot read it: visitors see nothing here.",
+    "empty": "The menu {{title}} has nothing to show in this language yet. Build it in jContent > Menus.",
+    "info": "Menu {{title}}, built in jContent > Menus. On the site, visitors do not see the items they cannot read."
+  }
+}
