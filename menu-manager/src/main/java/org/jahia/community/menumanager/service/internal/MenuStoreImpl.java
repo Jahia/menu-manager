@@ -27,6 +27,9 @@ import java.util.Set;
 @Component(service = MenuStore.class)
 public class MenuStoreImpl implements MenuStore {
 
+    /** The page item's reference to its page. */
+    private static final String PAGE_PROPERTY = "page";
+
     static final String MENUS_TYPE = "mnu:menus";
     static final String REVISION = "revision";
     private static final String TITLE = "jcr:title";
@@ -117,9 +120,10 @@ public class MenuStoreImpl implements MenuStore {
                 node = null;
             }
             if (node == null) {
-                node = parent.addNode(JCRContentUtils.findAvailableNodeName(parent, item.kind().id()), item.kind().nodeType());
-            } else if (!node.getParent().getIdentifier().equals(parent.getIdentifier())) {
-                String name = JCRContentUtils.findAvailableNodeName(parent, node.getName());
+                node = parent.addNode(JCRContentUtils.findAvailableNodeName(parent, nodeName(item.kind())), item.kind().nodeType());
+            } else if (!node.getParent().getIdentifier().equals(parent.getIdentifier()) || node.getName().equals(PAGE_PROPERTY)) {
+                // moved under another item, or named "page" by an earlier version (see nodeName)
+                String name = JCRContentUtils.findAvailableNodeName(parent, nodeName(item.kind()));
                 session.move(node.getPath(), parent.getPath() + "/" + name);
                 node = session.getNodeByIdentifier(node.getIdentifier());
             }
@@ -131,6 +135,20 @@ public class MenuStoreImpl implements MenuStore {
         for (int i = order.size() - 1; i >= 0; i--) {
             parent.orderBefore(order.get(i), i + 1 < order.size() ? order.get(i + 1) : null);
         }
+    }
+
+    /**
+     * The name of a new item node: its type's local name ({@code pageItem}), never a name an item's
+     * property also has. A page item's first page item was once named {@code page}, beside the item's own
+     * {@code page} property: publication then dropped that property in live, and the item vanished from
+     * the visitors' menu while the editor showed it published (tests/edge-cases.spec.ts).
+     *
+     * @param kind the item's kind
+     * @return the base name, made unique by the caller
+     */
+    static String nodeName(MenuItemKind kind) {
+        String type = kind.nodeType();
+        return type.substring(type.indexOf(':') + 1);
     }
 
     private static void write(JCRSessionWrapper session, JCRNodeWrapper node, MenuTree.Item item) throws MenuException, RepositoryException {
@@ -154,7 +172,7 @@ public class MenuStoreImpl implements MenuStore {
                 if (!page.isNodeType(MenuResolverImpl.PAGE_TYPE)) {
                     throw new MenuException(MenuException.BAD_TARGET, "Not a page: " + item.reference());
                 }
-                node.setProperty("page", session.getValueFactory().createValue(page, true));
+                node.setProperty(PAGE_PROPERTY, session.getValueFactory().createValue(page, true));
                 node.setProperty("includeSubpages", item.includeSubpages());
             }
             case INTERNAL_LINK -> {
