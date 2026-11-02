@@ -80,6 +80,9 @@ jobs:
           npx --yes audit-ci@7 --critical --skip-dev
       - name: Views
         working-directory: menu-manager-views
+        env:
+          # Yarn 2+ runs package scripts unless told not to (Sonar S6505)
+          YARN_ENABLE_SCRIPTS: false
         run: |
           yarn install --immutable --mode=skip-build
           yarn lint --max-warnings 0
