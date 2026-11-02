@@ -94,6 +94,45 @@ JAHIA_URL=http://localhost:8080 SUPER_USER_PASSWORD=root1234 yarn e2e:ci
 | `menus-screen` | The Menus screen: create a menu, pages with the ChoiceTree, a section, an external link, a Move button, a real pointer drag, save; full width; no screen for an editor |
 | `accessibility` | axe (WCAG 2.1 AA) on the four views, panels closed and open, and on the Menus screen |
 
+## CI and releases
+
+GitHub Actions run Jahia's shared [jahia-modules-action](https://github.com/Jahia/jahia-modules-action)
+workflows:
+
+| Workflow | When | What |
+|---|---|---|
+| `on-code-change.yml` | every pull request that changes code | module signature, dependency vulnerabilities, lint and type-check of the Menus screen, the views and the Cypress suite (`yarn lint` carries the Sonar rules), build with unit tests, SonarQube, the Cypress suite on Jahia 8.2.3.2 |
+| `on-merge.yml` | push to `main` | build, SBOM to Dependency-Track, SNAPSHOT to Nexus |
+| `nightly.yml` | every night | the Cypress suite on the modules built from `main` |
+| `schedule-sonar.yml` | Monday, Wednesday, Friday | full SonarQube analysis of `main` with OWASP Dependency-Check |
+| `chachalog-*.yml` | pull requests, push to `main` | checks the changelog fragment, opens the release pull request |
+| `on-release.yml` | a GitHub prerelease | Maven release of both modules, signature, Nexus promotion |
+
+Dependabot keeps the three JavaScript projects and the Maven build current, and holds back what
+would break jContent or the views (React 18, the Module Federation singletons, css-loader 7, the
+JavaScript modules library, the Jahia parent; reasons in `.github/dependabot.yml`).
+
+The private `jahia-security-scan` rules run locally before a release, over the whole tree:
+
+```bash
+semgrep scan --config ../jahia-security-scan/tools/semgrep-harness/rules/jahia --exclude node_modules --exclude node --exclude target --exclude dist --exclude 'src/main/resources/javascript/apps' .
+```
+
+The four GraphQL fields named like admin operations (`createMenu`, `updateMenu`, `deleteMenu`,
+`editableMenu`) carry a `nosemgrep` with the reason: `manageMenus` is a site permission, checked on
+the site by the server, which `@GraphQLRequiresPermission` (a check on the server root) cannot express.
+
+Every pull request carries a changelog fragment in `.chachalog/` (`.github/changelog-fragments.md`);
+the two modules share one version. To release:
+
+1. Merge the **chore: release menu-manager @ vX.Y.Z** pull request the bot opens.
+2. Create a prerelease on `main` tagged in Jahia's form, `X_Y_Z` (`1_0_0`), titled
+   `menu-manager vX.Y.Z`, with the `CHANGELOG.md` section as notes.
+3. `on-release.yml` runs the release. It pushes as the org CI account, which needs write access to
+   this repository (a repository admin grants it). Without it the release fails at its first push and
+   is done by hand (AIStartupKit `jahia-release-and-ci.md`, "Manual release when the release workflow
+   cannot run"). The release assets are `menu-manager-X.Y.Z.jar` and `menu-manager-views-X.Y.Z.tgz`.
+
 ## Licence
 
 MIT

@@ -18,7 +18,7 @@ const MenuManager = lazy(() => import('./MenuManager/MenuManager').then(m => ({d
 const ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M22 11V3h-7v3H9V3H2v8h7V8h2v10h4v3h7v-8h-7v3h-2V8h2v3z"/></svg>';
 
 const uiLanguage = (): string => {
-    const lang = (i18next.language || window.contextJsParameters?.uilang || 'en').slice(0, 2).toLowerCase();
+    const lang = (i18next.language || globalThis.contextJsParameters?.uilang || 'en').slice(0, 2).toLowerCase();
     return LOCALES[lang] ? lang : 'en';
 };
 
@@ -44,7 +44,7 @@ const MenuManagerRoute = (): JSX.Element => {
 
 export default async function register(): Promise<void> {
     await registerTranslations();
-    const toIcon = window.jahia?.moonstone?.toIconComponent;
+    const toIcon = globalThis.jahia?.moonstone?.toIconComponent;
     registry.add('adminRoute', 'menuManager', {
         targets: ['jcontent:85'],
         label: `${NS}:title`,

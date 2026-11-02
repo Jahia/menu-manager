@@ -53,6 +53,103 @@ const codeOf = (error: unknown): string => {
     return /^[a-zA-Z]+$/.test(message) ? message : 'generic';
 };
 
+/** The content picker's type for what is being chosen. */
+const pickerType = (kind: Kind | 'image'): string => {
+    if (kind === 'page' || kind === 'image') {
+        return kind;
+    }
+    return 'editoriallink';
+};
+
+const STATUSES = new Set(['PUBLISHED', 'MODIFIED', 'NOT_PUBLISHED']);
+
+/** The header's chip: unsaved changes first, else the menu's publication status. */
+const StatusChip = ({dirty, status}: {dirty: boolean; status?: string}): JSX.Element | null => {
+    const {t} = useTranslation(NS);
+    if (dirty) {
+        return <Chip label={t('status.unsaved')} color="warning"/>;
+    }
+    if (!status) {
+        return null;
+    }
+    let color: 'success' | 'warning' | 'default' = 'default';
+    if (status === 'PUBLISHED') {
+        color = 'success';
+    } else if (status === 'MODIFIED') {
+        color = 'warning';
+    }
+    return <Chip label={t(`status.${STATUSES.has(status) ? status : 'other'}`)} color={color}/>;
+};
+
+interface MenuHeaderProps {
+    list: MenuSummary[];
+    menuPath: string | null;
+    onMenu: (path: string) => void;
+    /** The languages to switch between; empty when no menu is open. */
+    languages: string[];
+    language: string;
+    onLanguage: (language: string) => void;
+    dirty: boolean;
+    busy: boolean;
+    hasMenu: boolean;
+    canPublish: boolean;
+    status?: string;
+    onNew: () => void;
+    onDiscard: () => void;
+    onPublish: () => void;
+    onSave: () => void;
+}
+
+/**
+ * The screen's header: the menu and language switches (locked while changes are unsaved), New
+ * menu, and Discard, Publish and Save.
+ */
+const MenuHeader = ({list, menuPath, onMenu, languages, language, onLanguage, dirty, busy, hasMenu, canPublish, status,
+                        onNew, onDiscard, onPublish, onSave}: MenuHeaderProps): JSX.Element => {
+    const {t} = useTranslation(NS);
+    const locked = (control: JSX.Element): JSX.Element => (dirty
+        ? <Tooltip label={t('header.lockedWhileDirty')}><span style={{display: 'inline-flex'}}>{control}</span></Tooltip> : control);
+    const menuOptions = list.map(m => ({label: m.title, value: m.path}));
+    const currentMenu = menuOptions.find(o => o.value === menuPath);
+    const actions = [
+        dirty && <Button key="discard" variant="ghost" icon={<Undo/>} label={t('header.discard')} isDisabled={busy} onClick={onDiscard}/>,
+        hasMenu && <Button key="publish" size="big" variant="outlined" icon={<Publish/>} label={t('header.publish')}
+                           isDisabled={dirty || busy || !canPublish} onClick={onPublish}/>,
+        hasMenu && <Button key="save" size="big" color="accent" icon={<Save/>} label={t('header.save')}
+                           isDisabled={!dirty || busy} isLoading={busy && dirty} onClick={onSave}/>
+    ].filter(Boolean);
+    return (
+        <Header
+            title={t('title')}
+            status={<StatusChip dirty={dirty} status={status}/>}
+            toolbarLeft={(
+                <div className={styles.toolbar}>
+                    {list.length > 0 && locked(
+                        <Dropdown
+                            label={currentMenu?.label ?? t('header.menu')}
+                            value={menuPath ?? ''}
+                            data={menuOptions}
+                            isDisabled={dirty || busy}
+                            onChange={(_e, o) => o.value && onMenu(o.value)}
+                        />
+                    )}
+                    {languages.length > 1 && locked(
+                        <Dropdown
+                            label={upper(language)}
+                            value={language}
+                            data={languages.map(l => ({label: upper(l), value: l}))}
+                            isDisabled={dirty || busy}
+                            onChange={(_e, o) => o.value && onLanguage(o.value)}
+                        />
+                    )}
+                    <Button variant="ghost" icon={<Add/>} label={t('header.newMenu')} isDisabled={dirty || busy} onClick={onNew}/>
+                </div>
+            )}
+            mainActions={actions}
+        />
+    );
+};
+
 /**
  * jContent > Menus: the site's menus, edited in one content language at a time. Changes stay in the
  * page until Save, which sends the whole tree in one call; a menu or a language cannot be switched
@@ -63,7 +160,8 @@ export const MenuManager = ({siteKey}: {siteKey: string}): JSX.Element => {
     const client = useApolloClient();
     const contentLanguage: string = useSelector((state: {language: string}) => state.language);
     const [language, setLanguage] = useState(contentLanguage);
-    const [menuPath, setMenuPath] = useState<string | null>(null);
+    // The menu chosen in the header, else the site's first one
+    const [chosenPath, setChosenPath] = useState<string | null>(null);
     const [items, setItems] = useState<Item[]>([]);
     const [revision, setRevision] = useState(0);
     const [dirty, setDirty] = useState(false);
@@ -76,22 +174,20 @@ export const MenuManager = ({siteKey}: {siteKey: string}): JSX.Element => {
 
     const menus = useQuery(MENUS, {variables: {siteKey, language}, fetchPolicy: 'network-only'});
     const list: MenuSummary[] = menus.data?.menuManager?.menus ?? [];
-    useEffect(() => {
-        if (!menuPath && list.length > 0) {
-            setMenuPath(list[0].path);
-        }
-    }, [list, menuPath]);
+    const menuPath = chosenPath ?? list[0]?.path ?? null;
 
     const editable = useQuery(EDITABLE_MENU, {variables: {path: menuPath, language}, skip: !menuPath, fetchPolicy: 'network-only'});
     const menu = editable.data?.menuManager?.editableMenu;
     const node = editable.data?.jcr?.nodeByPath;
-    useEffect(() => {
-        if (menu) {
-            setItems(fromServer(menu.items));
-            setRevision(menu.revision);
-            setDirty(false);
-        }
-    }, [menu]);
+    // Each copy the server answers (opening, saving, a language, a refresh) replaces the edited tree:
+    // set while rendering, as React advises for state that follows a prop, not in an effect
+    const [loaded, setLoaded] = useState<unknown>(null);
+    if (menu && menu !== loaded) {
+        setLoaded(menu);
+        setItems(fromServer(menu.items));
+        setRevision(menu.revision);
+        setDirty(false);
+    }
 
     // Leaving the page with unsaved changes asks first.
     useEffect(() => {
@@ -165,7 +261,7 @@ export const MenuManager = ({siteKey}: {siteKey: string}): JSX.Element => {
         setNewTitle('');
         toast('created');
         await menus.refetch();
-        setMenuPath(data.menuManager.createMenu.path);
+        setChosenPath(data.menuManager.createMenu.path);
     });
 
     const onRename = (title: string): Promise<void> => run(async () => {
@@ -183,28 +279,28 @@ export const MenuManager = ({siteKey}: {siteKey: string}): JSX.Element => {
         const {data} = await duplicateMenu({variables: {path: menuPath, title, language}});
         toast('duplicated');
         await menus.refetch();
-        setMenuPath(data.menuManager.duplicateMenu.path);
+        setChosenPath(data.menuManager.duplicateMenu.path);
     });
 
     const onDelete = (): void => setConfirm({
         message: t('settings.deleteConfirm', {title: menu?.title ?? menu?.fallbackTitle ?? ''}),
         action: () => run(async () => {
-            const container = menuPath!.slice(0, menuPath!.lastIndexOf('/'));
+            const container = menuPath.slice(0, menuPath.lastIndexOf('/'));
             await deleteMenu({variables: {path: menuPath}});
             if (node?.canPublish) {
                 // the container alone: its deleted child goes from live, other menus' changes stay
                 await publish({variables: {path: container, languages, subtree: false}});
             }
             toast('deleted');
-            setMenuPath(null);
+            setChosenPath(null);
             await menus.refetch();
         })
     });
 
     /** Jahia's content picker, then the chosen node's identifier and title in the edited language. */
     const pickContent = (kind: Kind | 'image', onPicked: (target: Target) => void): void => {
-        window.CE_API?.openPicker?.({
-            type: kind === 'page' ? 'page' : kind === 'image' ? 'image' : 'editoriallink',
+        globalThis.CE_API?.openPicker?.({
+            type: pickerType(kind),
             isMultiple: false,
             site: siteKey,
             lang: language,
@@ -239,55 +335,53 @@ export const MenuManager = ({siteKey}: {siteKey: string}): JSX.Element => {
             return {page: page?.displayName ?? r.node.displayName, path: r.node.path};
         }), [node]);
 
-    const status: string | undefined = node?.publication?.publicationStatus;
-    const statusChip = dirty ? <Chip label={t('status.unsaved')} color="warning"/>
-        : status ? <Chip label={t(`status.${['PUBLISHED', 'MODIFIED', 'NOT_PUBLISHED'].includes(status) ? status : 'other'}`)}
-                         color={status === 'PUBLISHED' ? 'success' : status === 'MODIFIED' ? 'warning' : 'default'}/> : null;
-
-    const locked = (control: JSX.Element): JSX.Element => (dirty
-        ? <Tooltip label={t('header.lockedWhileDirty')}><span style={{display: 'inline-flex'}}>{control}</span></Tooltip> : control);
-
-    const menuOptions = list.map(m => ({label: m.title, value: m.path}));
-    const currentMenu = menuOptions.find(o => o.value === menuPath);
-    const languageOptions = languages.map(l => ({label: upper(l), value: l}));
+    const onDiscard = (): void => {
+        if (menu) {
+            setItems(fromServer(menu.items));
+            setDirty(false);
+            setError(null);
+        }
+    };
 
     const header = (
-        <Header
-            title={t('title')}
-            status={statusChip}
-            toolbarLeft={(
-                <div className={styles.toolbar}>
-                    {list.length > 0 && locked(
-                        <Dropdown
-                            label={currentMenu?.label ?? t('header.menu')}
-                            value={menuPath ?? ''}
-                            data={menuOptions}
-                            isDisabled={dirty || busy}
-                            onChange={(_e, o) => o.value && setMenuPath(o.value)}
-                        />
-                    )}
-                    {menu && languages.length > 1 && locked(
-                        <Dropdown
-                            label={upper(language)}
-                            value={language}
-                            data={languageOptions}
-                            isDisabled={dirty || busy}
-                            onChange={(_e, o) => o.value && setLanguage(o.value)}
-                        />
-                    )}
-                    <Button variant="ghost" icon={<Add/>} label={t('header.newMenu')} isDisabled={dirty || busy} onClick={() => setCreating(true)}/>
-                </div>
-            )}
-            mainActions={[
-                dirty && <Button key="discard" variant="ghost" icon={<Undo/>} label={t('header.discard')} isDisabled={busy}
-                                 onClick={() => menu && (setItems(fromServer(menu.items)), setDirty(false), setError(null))}/>,
-                menu && <Button key="publish" size="big" variant="outlined" icon={<Publish/>} label={t('header.publish')}
-                                isDisabled={dirty || busy || !node?.canPublish} onClick={onPublish}/>,
-                menu && <Button key="save" size="big" color="accent" icon={<Save/>} label={t('header.save')}
-                                isDisabled={!dirty || busy} isLoading={busy && dirty} onClick={onSave}/>
-            ].filter(Boolean)}
+        <MenuHeader
+            list={list}
+            menuPath={menuPath}
+            onMenu={setChosenPath}
+            languages={menu ? languages : []}
+            language={language}
+            onLanguage={setLanguage}
+            dirty={dirty}
+            busy={busy}
+            hasMenu={Boolean(menu)}
+            canPublish={Boolean(node?.canPublish)}
+            status={node?.publication?.publicationStatus}
+            onNew={() => setCreating(true)}
+            onDiscard={onDiscard}
+            onPublish={onPublish}
+            onSave={onSave}
         />
     );
+
+    let structure: JSX.Element;
+    if (editable.loading && !menu) {
+        structure = <Loader size="big"/>;
+    } else if (items.length === 0) {
+        structure = <div className={styles.empty}>{t('empty.menu')}</div>;
+    } else {
+        structure = (
+            <MenuTree
+                items={items}
+                onChange={change}
+                language={language}
+                fallbackLanguage={menu?.effectiveFallbackLanguage ?? language}
+                siteLanguages={languages}
+                onPickTarget={onPickTarget}
+                onPickPromo={onPickPromo}
+                onConfirm={(message, action) => setConfirm({message, action})}
+            />
+        );
+    }
 
     let content: JSX.Element;
     if (menus.loading && !menus.data) {
@@ -318,20 +412,7 @@ export const MenuManager = ({siteKey}: {siteKey: string}): JSX.Element => {
                             <Typography variant="caption" className={styles.muted}>{t('structure.items', {count: count(items)})}</Typography>
                         </div>
                         <Typography variant="caption" className={styles.muted}>{t('structure.help')}</Typography>
-                        {editable.loading && !menu ? <Loader size="big"/>
-                            : items.length === 0 ? <div className={styles.empty}>{t('empty.menu')}</div>
-                                : (
-                                    <MenuTree
-                                        items={items}
-                                        onChange={change}
-                                        language={language}
-                                        fallbackLanguage={menu?.effectiveFallbackLanguage ?? language}
-                                        siteLanguages={languages}
-                                        onPickTarget={onPickTarget}
-                                        onPickPromo={onPickPromo}
-                                        onConfirm={(message, action) => setConfirm({message, action})}
-                                    />
-                                )}
+                        {structure}
                     </div>
                     {menu && <Preview key={`${menu.uuid}-${language}-${version}`} menu={menu.uuid} language={language}/>}
                     {menu && (

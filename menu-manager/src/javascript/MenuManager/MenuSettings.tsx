@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Button, Copy, Delete, Dropdown, Input, Typography} from '@jahia/moonstone';
 import {NS} from '../i18n';
@@ -30,8 +30,13 @@ const SITE_DEFAULT = 'site-default';
 export const MenuSettings = ({title, fallbackLanguage, siteDefault, siteLanguages, placements, isLocked, onRename, onFallback,
                                  onDuplicate, onDelete}: MenuSettingsProps): JSX.Element => {
     const {t} = useTranslation(NS);
+    // The field follows the saved title when it changes (a rename, another menu): set while rendering
     const [name, setName] = useState(title);
-    useEffect(() => setName(title), [title]);
+    const [shownTitle, setShownTitle] = useState(title);
+    if (title !== shownTitle) {
+        setShownTitle(title);
+        setName(title);
+    }
     // "Site default" is an option of its own: an empty value would draw it as Moonstone's grey placeholder
     // (3.8:1 on white). Not a language code (they hold no "-"), so it cannot meet a site language.
     const options = [{label: t('settings.fallbackDefault', {lang: upper(siteDefault)}), value: SITE_DEFAULT},

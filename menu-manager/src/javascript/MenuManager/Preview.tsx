@@ -14,9 +14,10 @@ interface Resolved {
     children?: Resolved[];
 }
 
+const STYLE_CLASS: Record<string, string | undefined> = {button: styles.previewButton, highlight: styles.previewHighlight};
+
 const Entry = ({item}: {item: Resolved}): JSX.Element => {
-    const cls = item.kind === 'section' ? styles.previewSection
-        : item.style === 'button' ? styles.previewButton : item.style === 'highlight' ? styles.previewHighlight : undefined;
+    const cls = item.kind === 'section' ? styles.previewSection : STYLE_CLASS[item.style];
     return (
         <li>
             <span className={cls}>{item.label}</span>
@@ -36,9 +37,9 @@ export const Preview = ({menu, language}: {menu: string; language: string}): JSX
                 <Typography variant="heading" component="h2">{t('preview.title', {lang: language.toUpperCase().replace('_', '-')})}</Typography>
             </div>
             <Typography variant="caption" className={styles.muted}>{t('preview.help')}</Typography>
-            {loading && !data ? <Loader size="small"/>
-                : items.length === 0 ? <Typography className={styles.muted}>{t('preview.empty')}</Typography>
-                    : <ul className={styles.preview} aria-label={t('preview.title', {lang: language})}>{items.map(i => <Entry key={i.id} item={i}/>)}</ul>}
+            {loading && !data && <Loader size="small"/>}
+            {!(loading && !data) && items.length === 0 && <Typography className={styles.muted}>{t('preview.empty')}</Typography>}
+            {items.length > 0 && <ul className={styles.preview} aria-label={t('preview.title', {lang: language})}>{items.map(i => <Entry key={i.id} item={i}/>)}</ul>}
         </div>
     );
 };

@@ -94,3 +94,13 @@
 | ChoiceTree's listbox has no accessible name (Moonstone's `Dropdown` takes no label) | `aria-label` set on it from the panel's name |
 | Muted text at `--color-gray_dark60` (3.8:1), unselected tabs (#7a7f88, 4.0:1), the fallback dropdown's placeholder, outlined danger buttons (#f44053, 3.7:1) | Full-strength `--color-gray_dark`; unselected tabs recoloured (the screen's one Moonstone recolouring); "Site default" a real option; Delete and Remove neutral outlined buttons with the Delete icon |
 | Filled buttons (user, 2026-11-02) | Moonstone's filled accent (white on #00a0e3, 2.9:1) and danger buttons fail AA; they are Jahia's own back-office colours and stay as jContent draws them. The accessibility spec leaves out `.moonstone-button_accent` and `.moonstone-button_danger` only, with the reason in the test; to raise with Moonstone |
+
+## 2026-11-02: phase 7, CI and release preparation
+
+| Topic | Decision |
+|---|---|
+| CI | content-governance's Jahia standard workflows; a lint job for the Menus screen (ESLint with the Sonar block, added in this phase: 40 findings fixed), the views and the Cypress suite (type-check); the Cypress suite on every PR (one Jahia start, about 1 minute of specs) and nightly |
+| Sonar | The Java module's `sonar.sources` includes `src/javascript`, its `*.test.ts` counted as tests |
+| Security scan | `jahia-security-scan` clean; `createMenu`, `updateMenu`, `deleteMenu`, `editableMenu` matched the admin-name heuristic of `jahia-graphql-admin-no-permission`: triaged inline (`nosemgrep` with the reason), the per-site check being tested by `authorization.spec.ts` |
+| Version | One version for both modules; `.chachalog/.version` 0.0.0 until 1.0.0 (it said 1.0.0, which a major fragment would have turned into 2.0.0); the first release's notes are five fragments |
+| Store | One pack, `store-submissions/menu-manager/`, two listings (the module, its views); packages from the CI-built GitHub release |

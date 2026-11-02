@@ -98,9 +98,9 @@ const PagesPanel = ({siteKey, language, onAdd}: {siteKey: string; language: stri
     }, [data]);
 
     // Moonstone's Dropdown takes no label and ChoiceTree forwards none: name its listbox after the panel
-    const choice = useRef<HTMLDivElement>(null);
+    const choiceRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
-        choice.current?.querySelector('[role="listbox"]')?.setAttribute('aria-label', t('add.pages'));
+        choiceRef.current?.querySelector('[role="listbox"]')?.setAttribute('aria-label', t('add.pages'));
     });
 
     const add = (): void => {
@@ -114,7 +114,7 @@ const PagesPanel = ({siteKey, language, onAdd}: {siteKey: string; language: stri
         <div className={styles.panelBody}>
             <Typography variant="caption" className={styles.muted}>{t('add.pagesHelp')}</Typography>
             {ChoiceTree ? (
-                <div data-mnu-role="page-choice" ref={choice}>
+                <div data-mnu-role="page-choice" ref={choiceRef}>
                     <ChoiceTree
                         id="mnu-add-pages"
                         field={field}

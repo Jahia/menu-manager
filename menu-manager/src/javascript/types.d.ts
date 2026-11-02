@@ -8,10 +8,11 @@ declare module '*.module.css' {
     export default classes;
 }
 
-interface Window {
-    jahia?: {
-        moonstone?: {toIconComponent?: (svg: string) => unknown};
-    };
-    CE_API?: {openPicker?: (options: Record<string, unknown>) => void};
-    contextJsParameters?: {contextPath?: string; uilang?: string; siteKey?: string};
-}
+// Globals jContent sets on the page, read through globalThis (all optional: always guarded with ?.)
+/* eslint-disable no-var */
+declare var jahia: {
+    moonstone?: {toIconComponent?: (svg: string) => unknown};
+} | undefined;
+declare var CE_API: {openPicker?: (options: Record<string, unknown>) => void} | undefined;
+declare var contextJsParameters: {contextPath?: string; uilang?: string; siteKey?: string} | undefined;
+/* eslint-enable no-var */
