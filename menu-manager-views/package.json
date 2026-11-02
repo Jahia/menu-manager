@@ -45,7 +45,7 @@
   },
   "jahia": {
     "name": "menu-manager-views",
-    "snapshot": true,
+    "snapshot": false,
     "required-version": "8.2.1.0",
     "module-type": "module",
     "module-dependencies": "default,menu-manager,javascript-modules-engine=[1.3,2)",
