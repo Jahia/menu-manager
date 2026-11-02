@@ -11,18 +11,42 @@ Menus built by hand in jContent, independent of the page tree, for Jahia 8.2.
 - What a visitor may not read (an item, or the page it points to) is left out of the menu they see,
   with everything under it.
 
-> Status: in development (phase 4 of 8). Next: classic-templates integration, Cypress tests, release.
+## Requirements
+
+- Jahia 8.2.1.0 or later (the views module; the Java bundle itself declares 8.2.0.0), with
+  jContent 3.7 to 3.x and GraphQL provider (`graphql-dxm-provider`) 3.5 or later.
+- The JavaScript modules engine 1.3 to 1.x, for the views (`menu-manager-views`).
+- No configuration, no external service. A template set whose areas accept the component: any area
+  that takes Jahia's navigation components (`jmix:navMenuComponent`) or any droppable content (a
+  classic-templates Free zone).
 
 ## Using it
 
-1. Enable **Menu Manager** and **Menu Manager views** on the site, and grant **manageMenus** (under
-   site-admin) to the roles that build menus.
+1. Enable **Menu Manager** and **Menu Manager views** on the site. Site administrators hold
+   **manageMenus** (it sits under `site-admin`); another role that builds menus needs it **and**
+   `publish`, since a menu reaches visitors when it is published from the screen.
 2. jContent > **Additional > Menus**: create a menu, add pages (chosen in the site's tree with
    jContent's own tree selector, optionally with their subpages), sections, internal links (any content, through the picker) and external links; drag
    items to order and nest them (or use each item's Move links); translate the labels by switching
    the language; **Save**, then **Publish**.
 3. Add the **Menu** component to a page (a Free zone on a classic-templates site), choose the menu,
    the levels shown and its accessible name, and its layout in **Layout > View**.
+
+In Page Builder, each Menu component says which menu it shows and links to it: **Edit this menu**
+opens jContent > Menus on that menu (`/jahia/jcontent/<site>/<language>/apps/menuManager?menu=<path>`).
+
+## Known limitations
+
+- **manageMenus decides who uses the Menus screen and its API, not who may write the menus.** Menus
+  are content under `/sites/<site>/menus`, with the site's own rights: a user who may write content
+  there can change it through Jahia's generic GraphQL or REST APIs, outside the screen and its
+  revision check. Restrict the folder's rights when that matters.
+- With **manageMenus** but without **publish**, a user saves menus visitors never see, and a menu
+  they delete stays on the live site until someone who may publish removes it.
+- A page item with **Include the page's subpages** lists at most 500 subpages.
+- A page item without a promotion of its own shows the page's classic-templates promotion
+  (`ctplmix:navPromo`), and classic-templates' "Hide from navigation" (`ctplHideFromNav`) is honoured
+  with Jahia's own flag; both are read only when classic-templates is installed.
 
 ## Layouts
 
@@ -57,7 +81,8 @@ on pages keep working.
 The views use their own tokens (`--mnu-text`, `--mnu-muted`, `--mnu-accent`, `--mnu-action`,
 `--mnu-on-action`, `--mnu-surface`, `--mnu-border`, `--mnu-radius`, `--mnu-shadow`, `--mnu-gap`,
 `--mnu-font`, `--mnu-focus`...), which default to the classic-templates tokens when the site has them
-and to neutral values otherwise. A theme restyles every menu by setting them.
+and to neutral values otherwise. A theme restyles every menu by setting them on `:root`, `body` or
+any element around a menu (a section of its own).
 
 ## GraphQL
 
@@ -131,7 +156,13 @@ the two modules share one version. To release:
 3. `on-release.yml` runs the release. It pushes as the org CI account, which needs write access to
    this repository (a repository admin grants it). Without it the release fails at its first push and
    is done by hand (AIStartupKit `jahia-release-and-ci.md`, "Manual release when the release workflow
-   cannot run"). The release assets are `menu-manager-X.Y.Z.jar` and `menu-manager-views-X.Y.Z.tgz`.
+   cannot run").
+4. The release writes the version into both `package.json` files and commits them before the poms
+   (`release-prepare` profile, `.m2/sync-version.mjs`), so the views package is not shipped as a
+   snapshot. Check it: `tar -xOf menu-manager-views-X.Y.Z.tgz package/package.json` shows the version
+   and `"snapshot": false`.
+5. Nothing attaches the packages to the GitHub release: upload `menu-manager-X.Y.Z.jar` and
+   `menu-manager-views-X.Y.Z.tgz` from the Nexus release (or from a build of the tag) to it.
 
 ## Licence
 

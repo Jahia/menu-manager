@@ -99,14 +99,20 @@ public class MenuStoreImpl implements MenuStore {
         Map<String, JCRNodeWrapper> existing = new HashMap<>();
         collect(menu, existing);
         Set<String> kept = new HashSet<>();
-        apply(session, menu, tree.items(), existing, kept);
-        for (Map.Entry<String, JCRNodeWrapper> entry : existing.entrySet()) {
-            if (!kept.contains(entry.getKey()) && stillThere(session, entry.getKey())) {
-                session.getNodeByIdentifier(entry.getKey()).remove();
+        try {
+            apply(session, menu, tree.items(), existing, kept);
+            for (Map.Entry<String, JCRNodeWrapper> entry : existing.entrySet()) {
+                if (!kept.contains(entry.getKey()) && stillThere(session, entry.getKey())) {
+                    session.getNodeByIdentifier(entry.getKey()).remove();
+                }
             }
+            menu.setProperty(REVISION, revision + 1);
+            session.save();
+        } catch (MenuException | RepositoryException e) {
+            // a refusal halfway leaves nothing pending in the request's session for another call to save
+            session.refresh(false);
+            throw e;
         }
-        menu.setProperty(REVISION, revision + 1);
-        session.save();
         return new SaveOutcome(revision + 1, tree.count());
     }
 
@@ -168,15 +174,19 @@ public class MenuStoreImpl implements MenuStore {
         writePromo(session, node, item.promo());
         switch (item.kind()) {
             case PAGE -> {
-                JCRNodeWrapper page = reference(session, item.reference());
-                if (!page.isNodeType(MenuResolverImpl.PAGE_TYPE)) {
-                    throw new MenuException(MenuException.BAD_TARGET, "Not a page: " + item.reference());
+                if (!keeps(node, PAGE_PROPERTY, item.reference())) {
+                    JCRNodeWrapper page = reference(session, item.reference());
+                    if (!page.isNodeType(MenuResolverImpl.PAGE_TYPE)) {
+                        throw new MenuException(MenuException.BAD_TARGET, "Not a page: " + item.reference());
+                    }
+                    node.setProperty(PAGE_PROPERTY, session.getValueFactory().createValue(page, true));
                 }
-                node.setProperty(PAGE_PROPERTY, session.getValueFactory().createValue(page, true));
                 node.setProperty("includeSubpages", item.includeSubpages());
             }
             case INTERNAL_LINK -> {
-                node.setProperty("target", session.getValueFactory().createValue(reference(session, item.reference()), true));
+                if (!keeps(node, "target", item.reference())) {
+                    node.setProperty("target", session.getValueFactory().createValue(reference(session, item.reference()), true));
+                }
                 node.setProperty("newTab", item.newTab());
             }
             case EXTERNAL_LINK -> {
@@ -197,7 +207,7 @@ public class MenuStoreImpl implements MenuStore {
         setOrRemove(node, "promoUrl", promo.url());
         if (promo.image() == null) {
             setOrRemove(node, "promoImage", null);
-        } else {
+        } else if (!keeps(node, "promoImage", promo.image())) {
             JCRNodeWrapper image = reference(session, promo.image());
             if (!image.isNodeType("jmix:image")) {
                 throw new MenuException(MenuException.BAD_TARGET, "Not an image: " + promo.image());
@@ -206,9 +216,18 @@ public class MenuStoreImpl implements MenuStore {
         }
         if (promo.target() == null) {
             setOrRemove(node, "promoTarget", null);
-        } else {
+        } else if (!keeps(node, "promoTarget", promo.target())) {
             node.setProperty("promoTarget", session.getValueFactory().createValue(reference(session, promo.target()), true));
         }
+    }
+
+    /**
+     * Whether the item already holds this reference, unchanged: it is then kept without being read, so a
+     * target deleted since, or one this editor cannot read (another editor linked it), never blocks the
+     * save of the rest of the menu. Only a new or changed reference is checked.
+     */
+    private static boolean keeps(JCRNodeWrapper node, String property, String id) throws RepositoryException {
+        return node.hasProperty(property) && node.getProperty(property).getString().equals(id);
     }
 
     private static JCRNodeWrapper reference(JCRSessionWrapper session, String id) throws MenuException {

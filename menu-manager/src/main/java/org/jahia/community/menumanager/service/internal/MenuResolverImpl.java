@@ -145,7 +145,9 @@ public class MenuResolverImpl implements MenuResolver {
         ctx.dependencies.add(page.getPath());
         List<ResolvedItem> kids = children(node, depth + 1, ctx);
         if (bool(node, "includeSubpages")) {
-            ctx.dependencies.add(page.getPath() + "/*");
+            // Each page visited is a dependency of its own (a title, a hide flag); a page added under one of
+            // them flushes through its parent's path. Never the subtree: it matches every content node of
+            // those pages, and any publication on them would flush the menu of every page.
             kids.addAll(subpages(page, depth + 1, ctx));
         }
         return Optional.of(new ResolvedItem(node.getIdentifier(), MenuItemKind.PAGE, shown, description, style, page.getIdentifier(),
@@ -162,11 +164,20 @@ public class MenuResolverImpl implements MenuResolver {
             return out;
         }
         for (JCRNodeWrapper child : page.getNodes()) {
-            if (!child.isNodeType(PAGE_TYPE) || hiddenFromNavigation(child) || invalidIn(child, ctx.language)) {
+            if (!child.isNodeType(PAGE_TYPE)) {
                 continue;
+            }
+            ctx.dependencies.add(child.getPath());
+            if (hiddenFromNavigation(child) || invalidIn(child, ctx.language)) {
+                continue;
+            }
+            if (ctx.subpages >= MenuTree.MAX_ITEMS) {
+                // as many as a menu built by hand may hold: the walk is open to visitors
+                break;
             }
             String title = first(text(child, "jcr:title"), ctx.fallback(child, "jcr:title"));
             if (title != null) {
+                ctx.subpages++;
                 out.add(new ResolvedItem(child.getIdentifier(), MenuItemKind.PAGE, title, null, "default", child.getIdentifier(),
                         child.getPath(), null, false, ctx.isCurrent(child), ctx.inTrail(child), subpages(child, depth + 1, ctx), null));
             }
@@ -329,6 +340,8 @@ public class MenuResolverImpl implements MenuResolver {
         final int maxDepth;
         final FallbackLookup fallbackLookup;
         final Set<String> dependencies = new LinkedHashSet<>();
+        /** Subpages added so far by includeSubpages items, across the menu. */
+        int subpages;
 
         Context(String language, String currentPath, int maxDepth, FallbackLookup fallbackLookup) {
             this.language = language;

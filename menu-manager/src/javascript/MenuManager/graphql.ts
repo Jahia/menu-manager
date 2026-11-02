@@ -50,16 +50,9 @@ export const RESOLVED_MENU = gql`
     }
 `;
 
-export const PAGES = gql`
-    query MenuManagerPages($path: String!, $language: String!) {
-        jcr {
-            nodeByPath(path: $path) {
-                uuid workspace path displayName(language: $language)
-                descendants(typesFilter: {types: ["jnt:page"]}, limit: 2000) {
-                    nodes { uuid workspace path displayName(language: $language) }
-                }
-            }
-        }
+export const PAGES_BY_ID = gql`
+    query MenuManagerPagesById($uuids: [String!]!, $language: String!) {
+        jcr { nodesById(uuids: $uuids) { uuid workspace path displayName(language: $language) primaryNodeType { name } } }
     }
 `;
 

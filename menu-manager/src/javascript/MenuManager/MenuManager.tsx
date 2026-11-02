@@ -53,6 +53,15 @@ const codeOf = (error: unknown): string => {
     return /^[a-zA-Z]+$/.test(message) ? message : 'generic';
 };
 
+/**
+ * The menu the URL asks for, `?menu=<path>`: the Menu component's edit-mode link opens the screen on
+ * its menu. Only a menu of this site; the server checks the rest.
+ */
+const requestedMenu = (siteKey: string): string | null => {
+    const path = new URLSearchParams(globalThis.location?.search ?? '').get('menu');
+    return path?.startsWith(`/sites/${siteKey}/menus/`) ? path : null;
+};
+
 /** The content picker's type for what is being chosen. */
 const pickerType = (kind: Kind | 'image'): string => {
     if (kind === 'page' || kind === 'image') {
@@ -161,7 +170,7 @@ export const MenuManager = ({siteKey}: {siteKey: string}): JSX.Element => {
     const contentLanguage: string = useSelector((state: {language: string}) => state.language);
     const [language, setLanguage] = useState(contentLanguage);
     // The menu chosen in the header, else the site's first one
-    const [chosenPath, setChosenPath] = useState<string | null>(null);
+    const [chosenPath, setChosenPath] = useState<string | null>(() => requestedMenu(siteKey));
     const [items, setItems] = useState<Item[]>([]);
     const [revision, setRevision] = useState(0);
     const [dirty, setDirty] = useState(false);
@@ -174,7 +183,8 @@ export const MenuManager = ({siteKey}: {siteKey: string}): JSX.Element => {
 
     const menus = useQuery(MENUS, {variables: {siteKey, language}, fetchPolicy: 'network-only'});
     const list: MenuSummary[] = menus.data?.menuManager?.menus ?? [];
-    const menuPath = chosenPath ?? list[0]?.path ?? null;
+    // A menu asked for by the URL or chosen in the header, when it is one of the site's; else the first
+    const menuPath = (chosenPath && list.some(m => m.path === chosenPath) ? chosenPath : null) ?? list[0]?.path ?? null;
 
     const editable = useQuery(EDITABLE_MENU, {variables: {path: menuPath, language}, skip: !menuPath, fetchPolicy: 'network-only'});
     const menu = editable.data?.menuManager?.editableMenu;

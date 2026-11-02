@@ -9,10 +9,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 class UrlPolicyTest {
 
     @ParameterizedTest
-    @ValueSource(strings = {"https://www.molex.com", "http://example.org/a/b?q=1#top", "HTTPS://EXAMPLE.COM",
+    @ValueSource(strings = {"https://www.example.com", "http://example.org/a/b?q=1#top", "HTTPS://EXAMPLE.COM",
             "mailto:sales@example.com", "tel:+33123456789", "https://例え.jp/パス"})
     void acceptsTheAllowedSchemes(String url) {
-        assertThat(UrlPolicy.check(url)).contains(url);
+        assertThat(UrlPolicy.check(url)).contains(url.replace("HTTPS://", "https://"));
+    }
+
+    @Test
+    void writesTheSchemeInLowerCaseAsTheContentTypeExpects() {
+        assertThat(UrlPolicy.check("HTTPS://Example.COM/Path")).contains("https://Example.COM/Path");
+        assertThat(UrlPolicy.check("MailTo:Sales@Example.com")).contains("mailto:Sales@Example.com");
     }
 
     @Test

@@ -9,6 +9,10 @@ on:
   schedule:
     - cron: "0 3 * * *"
 
+# A read-only token: the repository default is write, and these jobs only build and test
+permissions:
+  contents: read
+
 jobs:
   build:
     permissions:
@@ -30,6 +34,10 @@ jobs:
           mvn_settings_filepath: '.github/maven.settings.xml'
 
   integration-tests:
+    permissions:
+      contents: read
+      packages: read
+      checks: write
     needs: build
     uses: Jahia/jahia-modules-action/.github/workflows/reusable-integration-tests.yml@v2
     secrets: inherit

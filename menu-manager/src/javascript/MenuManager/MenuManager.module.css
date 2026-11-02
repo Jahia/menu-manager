@@ -82,24 +82,6 @@
 
 /* ---- Add items --------------------------------------------------------------------------------- */
 
-/* Moonstone's tab bar keeps a fixed height: scrolled sideways rather than wrapped under the panel */
-.tabs {
-    overflow-x: auto;
-    min-width: 0;
-}
-
-.tabs > [role="tablist"] {
-    flex-wrap: nowrap;
-    width: max-content;
-}
-
-/* The one place this screen recolours Moonstone: an unselected tab's grey (#7a7f88) reads 4.0:1 on
-   white, under WCAG AA's 4.5:1 */
-.tabs [role="tab"][aria-selected="false"],
-.tabs [role="tab"][aria-selected="false"] .moonstone-typography {
-    color: var(--color-gray_dark, #293136);
-}
-
 .panelBody {
     display: flex;
     flex-direction: column;

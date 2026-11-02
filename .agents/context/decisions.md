@@ -4,7 +4,7 @@
 
 | Topic | Decision |
 |---|---|
-| Name | `menu-manager`, prefix `mnu` / `mnumix` (free on the local stack and the Molex cloud) |
+| Name | `menu-manager`, prefix `mnu` / `mnumix` (free on the local stack and the demo cloud instance) |
 | Packaging | Monorepo: Java bundle (types, resolver, GraphQL, Menus screen) + JS module (views), Formidable's layout |
 | Languages | One tree shared by every language; labels per language; an item can be switched off per language (`j:invalidLanguages`) |
 | classic-templates | Both: its areas accept components marked `jmix:navMenuComponent`, and its header gets a menu source (page tree or a custom menu); two PRs on classic-templates |
@@ -19,7 +19,7 @@
 | Does an untranslated node vanish on live? | No: English-only content nodes stay visible on live in zh_HK, for guest too (gba-hk, `j:mixLanguage` false). A label is never mandatory; the resolver reads the fallback language itself |
 | Marker for template-set areas | `jmix:navMenuComponent` (core, no properties). A second residual child definition `+ * (jmix:navMenuComponent)` added to an area type holding content installs as a minor change and accepts the component. Jahia's legacy `jnt:navMenu` wears it too: a template set filters the editor with its area's allowed types |
 | Header reading a custom menu | Through `server.gql.executeQuerySync` on `menuManager.resolvedMenu` (one resolver); not verified yet that it runs as the visitor (phase 4) |
-| Host versions | jContent 3.8.1, Moonstone 2.20.3, React 18.3.1, react-i18next 11, app-shell 3.3.0 on the local stack and the Molex cloud: webpack, Vite-ready. Moonstone has no drag-and-drop tree: dnd-kit |
+| Host versions | jContent 3.8.1, Moonstone 2.20.3, React 18.3.1, react-i18next 11, app-shell 3.3.0 on the local stack and the demo cloud instance: webpack, Vite-ready. Moonstone has no drag-and-drop tree: dnd-kit |
 | Where menus live | `/sites/<site>/menus` (the site node accepts any child) |
 | Component's menu picker | `choicelist[nodes='$currentSite/menus;mnu:menu']` on a weakreference (not checked in the editor yet) |
 
@@ -105,3 +105,19 @@
 | Version | One version for both modules; `.chachalog/.version` 0.0.0 until 1.0.0 (it said 1.0.0, which a major fragment would have turned into 2.0.0); the first release's notes are five fragments |
 | Store | One pack, `store-submissions/menu-manager/`, two listings (the module, its views); packages from the CI-built GitHub release |
 | Item node names (bug found seeding the Store demo) | Items were named after their kind, so a page item's first page item was a node `page` beside the item's `page` property, and publication dropped the property in live: the item vanished from the visitors' menu while the screen showed it published. Items are now named after their type (`pageItem`...), and an item still named `page` is renamed on its next save; `edge-cases.spec.ts` publishes such a tree and reads it in live, `MenuStoreImplTest` keeps the names apart from every item property |
+
+## 2026-11-02: before 1.0.0, review outcomes (Java review, Cortex review) and user requests
+
+| Topic | Outcome |
+|---|---|
+| Edit link (user) | The Menu component's edit-mode note links to jContent > Menus on its menu: `<context>/jahia/jcontent/<the menu's site>/<language>/apps/menuManager?menu=<path>`, `target="_top"` (the edit frame is an iframe); the screen opens the menu the URL names when it is one of the site's |
+| Add items (user) | Back to Moonstone's Accordion (tabs scrolled sideways in the 340 px column). Its header's invalid `role="accordion-item"` becomes `button` and its panel gets the id `aria-controls` names, in one effect of the panel; the axe check passes |
+| Add pages | Ticked pages are read by identifier (`nodesById`): no list capped at 2000 under a hard-coded `home` |
+| References | A reference the editor did not change is kept without being read: a deleted or unreadable target no longer blocks the save of the rest of the menu |
+| Subpages | Exact dependencies on each page visited (the subtree pattern flushed every menu on any publication under them); at most 500 subpages per menu |
+| Stale live menu after a target is published | Not reproduced: publishing the target flushes the cached menu (`acl-and-cache.spec.ts` keeps the case) |
+| Paths and addresses | `.`/`..` refused as a menu name; an address scheme is stored in lower case (the CND constraint is case-sensitive) |
+| Theme tokens | Public `--mnu-*` read wherever a theme sets them, private `--_mnu-*` used by the views |
+| Release version | `release-prepare` profile (after Formidable) writes the Maven version into both `package.json`, `jahia.snapshot` from it, and commits them before the poms |
+| CI | Dependency audit (`audit-ci --critical --skip-dev`) of both JavaScript projects in the lint job; the nightly token read-only |
+| Documented, not changed | `manageMenus` gates the screen and its API, not writes to `/sites/<site>/menus`; it needs `publish` too; the views' hook order (`useGQLQuery` after an early return) and the eager fallback lookups stay as they are; languages are checked for form, not against the site's |

@@ -68,17 +68,21 @@ jobs:
       # Each project's own Yarn (packageManager): 1.22 for the screen and the suite, 4 for the views
       - run: corepack enable
       # The ESLint config of each carries the Sonar block: the gate's usual rules fail here first
+      # audit-ci on the runtime dependencies: the shared action audits the root package.json, which
+      # this monorepo does not have
       - name: Menus screen (UI extension)
         working-directory: menu-manager
         run: |
           yarn install --frozen-lockfile
           yarn typecheck
           yarn lint --max-warnings 0
+          npx --yes audit-ci@7 --critical --skip-dev
       - name: Views
         working-directory: menu-manager-views
         run: |
           yarn install --immutable
           yarn lint --max-warnings 0
+          npx --yes audit-ci@7 --critical --skip-dev
       - name: Cypress suite
         working-directory: tests
         run: |

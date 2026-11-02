@@ -124,4 +124,27 @@ describe('Menu Manager - access rights and the render cache', () => {
         seenBy(outsider).should('deep.eq', ['About us', 'Jahia.com']);
         seenBy(reader2).should('deep.eq', ['About us', 'Members area', 'Jahia.com']);
     });
+
+    it('shows an item once its page is published, though the menu was cached without it', () => {
+        // The cached fragment depends on the item's target even while visitors cannot read it: its
+        // publication flushes the menu (a page added to the menu, then published later)
+        addNodeTree(home, {name: 'company', type: 'jnt:page', props: [
+            {name: 'jcr:title', value: 'Company', language: 'en'}, {name: 'j:templateName', value: 'content'}]});
+        addNodeTree(`${home}/company`, {name: 'events', type: 'jnt:page', props: [
+            {name: 'jcr:title', value: 'Events', language: 'en'}, {name: 'j:templateName', value: 'content'}]});
+        cy.then(() => uuidOf(`${home}/company/events`)).then(events => {
+            gqlOk(asRoot(), 'query Q($path: String!) { menuManager { editableMenu(path: $path, language: "en") { items { id kind target { uuid } url label } } } }', {path: menuPath})
+                .its('menuManager.editableMenu.items').then((items: {id: string; kind: 'page' | 'externalLink'; target?: {uuid: string}; url?: string; label?: string}[]) => {
+                    saveMenuOk(menuPath, 'en', [...items.map(i => (i.kind === 'page'
+                        ? {id: i.id, kind: 'page' as const, page: i.target?.uuid}
+                        : {id: i.id, kind: 'externalLink' as const, label: i.label, url: i.url})),
+                    {kind: 'section', label: 'More', children: [{kind: 'page', page: events}]}]);
+                });
+        });
+        // the menu goes live, the new page does not: a guest caches the menu without it
+        cy.then(() => publish(menuPath));
+        seenBy(null).should('not.include', 'Events').and('include', 'About us');
+        cy.then(() => publish(`${home}/company`));
+        seenBy(null).should('include', 'Events');
+    });
 });

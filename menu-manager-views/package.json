@@ -1,6 +1,6 @@
 {
   "name": "menu-manager-views",
-  "version": "1.0.0-SNAPSHOT",
+  "version": "1.0.0",
   "description": "Views of the Menu Manager component (mnu:navigation), one per layout: a horizontal bar with dropdowns (default), a mega menu, a vertical list, columns",
   "private": true,
   "type": "module",

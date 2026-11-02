@@ -1,24 +1,25 @@
 /*
- * Menu Manager menus. The module's own tokens (--mnu-*) default to the classic-templates tokens when
- * the site has them, else to neutral values, so a theme restyles a menu by overriding tokens only.
+ * Menu Manager menus. The public tokens (--mnu-*) are read wherever a theme sets them (:root, body, a
+ * section); unset, the classic-templates token where the menu sits (a dark section's own), else a
+ * neutral value. The views use the private copies (--_mnu-*) these resolve into.
  */
 .nav {
-  --mnu-text: var(--ctpl-color-text, currentColor);
-  --mnu-muted: var(--ctpl-color-text-muted, #5b6770);
-  --mnu-accent: var(--ctpl-color-link, var(--ctpl-color-action, #0b62c4));
-  --mnu-action: var(--ctpl-color-action, #0b62c4);
-  --mnu-on-action: var(--ctpl-color-text-on-action, #fff);
-  --mnu-surface: var(--ctpl-color-surface-raised, #fff);
-  --mnu-border: var(--ctpl-color-border, #d6dbe0);
-  --mnu-radius: var(--ctpl-radius-md, 6px);
-  --mnu-shadow: var(--ctpl-shadow-md, 0 12px 28px rgba(16, 24, 32, 0.14));
-  --mnu-gap: var(--ctpl-space-4, 16px);
-  --mnu-gap-small: var(--ctpl-space-2, 8px);
-  --mnu-font: var(--ctpl-font-body, inherit);
-  --mnu-heading-weight: var(--ctpl-font-weight-bold, 700);
-  --mnu-focus: var(--ctpl-focus-ring, 2px solid currentColor);
-  font-family: var(--mnu-font);
-  color: var(--mnu-text);
+  --_mnu-text: var(--mnu-text, var(--ctpl-color-text, currentColor));
+  --_mnu-muted: var(--mnu-muted, var(--ctpl-color-text-muted, #5b6770));
+  --_mnu-accent: var(--mnu-accent, var(--ctpl-color-link, var(--ctpl-color-action, #0b62c4)));
+  --_mnu-action: var(--mnu-action, var(--ctpl-color-action, #0b62c4));
+  --_mnu-on-action: var(--mnu-on-action, var(--ctpl-color-text-on-action, #fff));
+  --_mnu-surface: var(--mnu-surface, var(--ctpl-color-surface-raised, #fff));
+  --_mnu-border: var(--mnu-border, var(--ctpl-color-border, #d6dbe0));
+  --_mnu-radius: var(--mnu-radius, var(--ctpl-radius-md, 6px));
+  --_mnu-shadow: var(--mnu-shadow, var(--ctpl-shadow-md, 0 12px 28px rgba(16, 24, 32, 0.14)));
+  --_mnu-gap: var(--mnu-gap, var(--ctpl-space-4, 16px));
+  --_mnu-gap-small: var(--mnu-gap-small, var(--ctpl-space-2, 8px));
+  --_mnu-font: var(--mnu-font, var(--ctpl-font-body, inherit));
+  --_mnu-heading-weight: var(--mnu-heading-weight, var(--ctpl-font-weight-bold, 700));
+  --_mnu-focus: var(--mnu-focus, var(--ctpl-focus-ring, 2px solid currentColor));
+  font-family: var(--_mnu-font);
+  color: var(--_mnu-text);
 }
 
 .nav ul {
@@ -36,7 +37,7 @@
 }
 
 .link:hover {
-  color: var(--mnu-accent);
+  color: var(--_mnu-accent);
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
@@ -44,26 +45,26 @@
 .link:focus-visible,
 .disclosure:focus-visible,
 .mobileToggle:focus-visible {
-  outline: var(--mnu-focus);
+  outline: var(--_mnu-focus);
   outline-offset: 2px;
 }
 
 .current {
-  color: var(--mnu-accent);
-  font-weight: var(--mnu-heading-weight);
+  color: var(--_mnu-accent);
+  font-weight: var(--_mnu-heading-weight);
 }
 
 .section {
-  color: var(--mnu-muted);
+  color: var(--_mnu-muted);
   font-size: 0.8em;
-  font-weight: var(--mnu-heading-weight);
+  font-weight: var(--_mnu-heading-weight);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .highlight {
-  color: var(--mnu-accent);
-  font-weight: var(--mnu-heading-weight);
+  color: var(--_mnu-accent);
+  font-weight: var(--_mnu-heading-weight);
 }
 
 /* Doubled class: the button keeps its padding over the layout's entry rules (.topEntry, .megaHead,
@@ -73,17 +74,17 @@
   align-self: center;
   padding: 0.4em 1em;
   border-radius: 999px;
-  background: var(--mnu-action);
-  color: var(--mnu-on-action);
+  background: var(--_mnu-action);
+  color: var(--_mnu-on-action);
   font-size: 1em;
   line-height: 1.25;
   letter-spacing: normal;
   text-transform: none;
-  font-weight: var(--mnu-heading-weight);
+  font-weight: var(--_mnu-heading-weight);
 }
 
 .button.link:hover {
-  color: var(--mnu-on-action);
+  color: var(--_mnu-on-action);
   text-decoration: none;
   filter: brightness(1.08);
 }
@@ -91,7 +92,7 @@
 .description {
   display: block;
   margin-top: 2px;
-  color: var(--mnu-muted);
+  color: var(--_mnu-muted);
   font-size: 0.875em;
   line-height: 1.4;
 }
@@ -102,8 +103,8 @@
 
 .deeper {
   margin-top: 4px !important;
-  padding-left: var(--mnu-gap) !important;
-  border-left: 2px solid var(--mnu-border);
+  padding-left: var(--_mnu-gap) !important;
+  border-left: 2px solid var(--_mnu-border);
 }
 
 .srOnly {
@@ -116,12 +117,19 @@
 }
 
 .note {
-  margin: 0 0 var(--mnu-gap-small);
+  margin: 0 0 var(--_mnu-gap-small);
   padding: 6px 10px;
-  border: 1px dashed var(--mnu-border);
-  border-radius: var(--mnu-radius);
-  color: var(--mnu-muted);
+  border: 1px dashed var(--_mnu-border);
+  border-radius: var(--_mnu-radius);
+  color: var(--_mnu-muted);
   font-size: 0.875em;
+}
+
+.noteLink {
+  color: var(--_mnu-accent);
+  font-weight: var(--_mnu-heading-weight);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 /* ---- Horizontal bar with dropdowns -------------------------------------------------------------- */
@@ -130,7 +138,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--mnu-gap-small) calc(var(--mnu-gap) * 1.5);
+  gap: var(--_mnu-gap-small) calc(var(--_mnu-gap) * 1.5);
 }
 
 .top {
@@ -148,7 +156,7 @@
 }
 
 .inTrail > .topRow > .topEntry {
-  box-shadow: inset 0 -2px 0 var(--mnu-accent);
+  box-shadow: inset 0 -2px 0 var(--_mnu-accent);
 }
 
 .disclosure {
@@ -157,7 +165,7 @@
   width: 28px;
   height: 28px;
   border: 0;
-  border-radius: var(--mnu-radius);
+  border-radius: var(--_mnu-radius);
   background: transparent;
   color: inherit;
   cursor: pointer;
@@ -176,14 +184,14 @@
   position: absolute;
   z-index: 50;
   top: 100%;
-  left: calc(var(--mnu-gap) * -1);
+  left: calc(var(--_mnu-gap) * -1);
   min-width: 240px;
   max-width: min(420px, 90vw);
-  padding: var(--mnu-gap);
-  border: 1px solid var(--mnu-border);
-  border-radius: var(--mnu-radius);
-  background: var(--mnu-surface);
-  box-shadow: var(--mnu-shadow);
+  padding: var(--_mnu-gap);
+  border: 1px solid var(--_mnu-border);
+  border-radius: var(--_mnu-radius);
+  background: var(--_mnu-surface);
+  box-shadow: var(--_mnu-shadow);
 }
 
 /* Without the script, a panel opens on hover and while focus is inside it. */
@@ -194,7 +202,7 @@
 }
 
 .panelList > li + li {
-  border-top: 1px solid var(--mnu-border);
+  border-top: 1px solid var(--_mnu-border);
 }
 
 .panelList > .nestedItem {
@@ -218,9 +226,9 @@
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
-  border: 1px solid var(--mnu-border);
-  border-radius: var(--mnu-radius);
-  background: var(--mnu-surface);
+  border: 1px solid var(--_mnu-border);
+  border-radius: var(--_mnu-radius);
+  background: var(--_mnu-surface);
   color: inherit;
   font: inherit;
   cursor: pointer;
@@ -239,11 +247,11 @@
     flex-direction: column;
     align-items: stretch;
     gap: 0;
-    margin-top: var(--mnu-gap-small);
+    margin-top: var(--_mnu-gap-small);
   }
 
   .horizontal .top {
-    border-top: 1px solid var(--mnu-border);
+    border-top: 1px solid var(--_mnu-border);
   }
 
   .horizontal .topRow {
@@ -256,7 +264,7 @@
     max-width: none;
     border: 0;
     box-shadow: none;
-    padding: 0 0 var(--mnu-gap-small) var(--mnu-gap);
+    padding: 0 0 var(--_mnu-gap-small) var(--_mnu-gap);
   }
 }
 
@@ -275,9 +283,9 @@
   right: 0;
   max-width: none;
   min-width: 0;
-  padding: calc(var(--mnu-gap) * 1.5);
+  padding: calc(var(--_mnu-gap) * 1.5);
   grid-template-columns: minmax(180px, 1fr) 3fr;
-  gap: calc(var(--mnu-gap) * 2);
+  gap: calc(var(--_mnu-gap) * 2);
 }
 
 /* The panel shows as a grid wherever the bar shows it as a block. */
@@ -295,9 +303,9 @@
 .promo {
   display: flex;
   flex-direction: column;
-  gap: var(--mnu-gap-small);
-  padding: var(--mnu-gap);
-  border-radius: var(--mnu-radius);
+  gap: var(--_mnu-gap-small);
+  padding: var(--_mnu-gap);
+  border-radius: var(--_mnu-radius);
   background: var(--ctpl-color-surface-sunken, rgba(127, 127, 127, 0.08));
 }
 
@@ -307,29 +315,29 @@
   height: auto;
   aspect-ratio: 16 / 9;
   object-fit: cover;
-  border-radius: var(--mnu-radius);
+  border-radius: var(--_mnu-radius);
 }
 
 .promoTitle {
   margin: 0;
-  font-weight: var(--mnu-heading-weight);
+  font-weight: var(--_mnu-heading-weight);
   font-size: 1.1em;
 }
 
 .promoText {
   margin: 0;
-  color: var(--mnu-muted);
+  color: var(--_mnu-muted);
   line-height: 1.5;
 }
 
 .promoButton {
   align-self: flex-start;
-  margin-top: var(--mnu-gap-small);
+  margin-top: var(--_mnu-gap-small);
   padding: 0.45em 1.1em;
   border-radius: 999px;
-  background: var(--mnu-action);
-  color: var(--mnu-on-action);
-  font-weight: var(--mnu-heading-weight);
+  background: var(--_mnu-action);
+  color: var(--_mnu-on-action);
+  font-weight: var(--_mnu-heading-weight);
   text-decoration: none;
 }
 
@@ -338,39 +346,39 @@
 }
 
 .promoButton:focus-visible {
-  outline: var(--mnu-focus);
+  outline: var(--_mnu-focus);
   outline-offset: 2px;
 }
 
 .megaIntro {
-  padding-right: var(--mnu-gap);
-  border-right: 1px solid var(--mnu-border);
+  padding-right: var(--_mnu-gap);
+  border-right: 1px solid var(--_mnu-border);
 }
 
 .megaTitle {
   font-size: 1.25em;
-  font-weight: var(--mnu-heading-weight);
+  font-weight: var(--_mnu-heading-weight);
 }
 
 .megaDescription {
-  margin: var(--mnu-gap-small) 0 0;
-  color: var(--mnu-muted);
+  margin: var(--_mnu-gap-small) 0 0;
+  color: var(--_mnu-muted);
   line-height: 1.5;
 }
 
 .megaColumns {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
-  gap: var(--mnu-gap) calc(var(--mnu-gap) * 1.5);
+  gap: var(--_mnu-gap) calc(var(--_mnu-gap) * 1.5);
   align-content: start;
 }
 
 .megaHead {
-  font-weight: var(--mnu-heading-weight);
+  font-weight: var(--_mnu-heading-weight);
 }
 
 .megaItems {
-  margin-top: var(--mnu-gap-small) !important;
+  margin-top: var(--_mnu-gap-small) !important;
 }
 
 .megaItems > .nestedItem {
@@ -383,7 +391,7 @@
   .top[data-open] > .megaPanel,
   .horizontal[data-edit] .megaPanel {
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--mnu-gap);
+    gap: var(--_mnu-gap);
   }
 
   .megaIntro {
@@ -402,7 +410,7 @@
 
 .verticalList > .nestedItem {
   padding: 6px 0;
-  border-bottom: 1px solid var(--mnu-border);
+  border-bottom: 1px solid var(--_mnu-border);
 }
 
 /* ---- Columns (a footer) ----------------------------------------------------------------------- */
@@ -410,12 +418,12 @@
 .columnList {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
-  gap: calc(var(--mnu-gap) * 1.5);
+  gap: calc(var(--_mnu-gap) * 1.5);
 }
 
 .columnHead {
-  margin-bottom: var(--mnu-gap-small);
-  font-weight: var(--mnu-heading-weight);
+  margin-bottom: var(--_mnu-gap-small);
+  font-weight: var(--_mnu-heading-weight);
 }
 
 .column > .columnHead.section {

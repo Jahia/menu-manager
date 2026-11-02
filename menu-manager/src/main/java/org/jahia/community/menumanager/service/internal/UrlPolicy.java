@@ -42,12 +42,18 @@ public final class UrlPolicy {
             String rest = url.substring(url.indexOf("://") + 3);
             int end = firstOf(rest, "/?#");
             String authority = end < 0 ? rest : rest.substring(0, end);
-            return authority.isEmpty() || authority.contains("\\") ? Optional.empty() : Optional.of(url);
+            return authority.isEmpty() || authority.contains("\\") ? Optional.empty() : Optional.of(lowerScheme(url));
         }
         if ((lower.startsWith("mailto:") && url.length() > 7) || (lower.startsWith("tel:") && url.length() > 4)) {
-            return Optional.of(url);
+            return Optional.of(lowerScheme(url));
         }
         return Optional.empty();
+    }
+
+    /** The scheme in lower case, as the content type's constraint expects ({@code HTTPS://} would be refused there). */
+    private static String lowerScheme(String url) {
+        int colon = url.indexOf(':');
+        return url.substring(0, colon).toLowerCase(Locale.ROOT) + url.substring(colon);
     }
 
     private static String stripSpaces(String s) {
