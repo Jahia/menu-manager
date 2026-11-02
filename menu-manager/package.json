@@ -1,6 +1,6 @@
 {
   "name": "@jahia/menu-manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "packageManager": "yarn@1.22.22",
   "description": "jContent UI extension - the Menus screen: menus of pages, sections and links, ordered by drag and drop and translated per language",
   "author": "Stephane Monier <smonier@jahia.com>",
