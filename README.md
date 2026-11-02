@@ -73,6 +73,27 @@ and to neutral values otherwise. A theme restyles every menu by setting them.
 
 Maven 3.8 and JDK 17 (`mise.toml`): `mvn clean install` builds both modules and runs every test (Java, the Menus screen, the views).
 
+## Tests
+
+`tests/` is the Cypress suite (its own Yarn 1 project, `@jahia/cypress`), run against a Jahia where
+both modules, `javascript-modules-engine` 1.3 and classic-templates are installed
+(`tests/provisioning-manifest-build.yml` lists them for CI). Each spec creates its sites and users
+and deletes them after.
+
+```bash
+cd tests && yarn install --frozen-lockfile
+JAHIA_URL=http://localhost:8080 SUPER_USER_PASSWORD=root1234 yarn e2e:ci
+```
+
+| Spec | Covers |
+|---|---|
+| `happy-path` | Build a menu of every kind of item through the API, publish, render on live in EN and FR (fallback), each view picked in Layout > View, the current page, a published change through the cache, the button style |
+| `authorization` | Site administrators manage menus; an editor (past the API filter), another site's administrator and a guest are refused every field of the Menus screen; a guest reads `resolvedMenu` only |
+| `edge-cases` | Every refusal of the save API (stale revision, addresses, depth, size, values, targets) leaves the menu as it was; markup characters stay text; fallback language; items hidden per language; depth; subpages; deleted and unpublished targets |
+| `acl-and-cache` | A page with broken ACL inheritance: shown to the users who may read it only, in the API and on live; root then guest, two users with the same rights then others, a guest warming the cache first |
+| `menus-screen` | The Menus screen: create a menu, pages with the ChoiceTree, a section, an external link, a Move button, a real pointer drag, save; full width; no screen for an editor |
+| `accessibility` | axe (WCAG 2.1 AA) on the four views, panels closed and open, and on the Menus screen |
+
 ## Licence
 
 MIT

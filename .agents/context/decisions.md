@@ -84,3 +84,13 @@
 | View labels | `jmix_renderable.j_view.<view>` in the resource bundle of the type's module (menu-manager); the core `link` view stays in the list, as on every content |
 | Removing `layout` | A removal is a major change even with no value left: the local stack took it through provisioning with `ignoreChecks: true`, which an unreleased type may do and a released one never |
 | Resource bundles | Every non-ASCII character is a `\uXXXX` escape (native2ascii reads ISO-8859-1: every French label read `affichÃ©s`); `ResourceBundlesTest` fails the build on a non-ASCII line |
+
+## 2026-11-02: phase 6, the Cypress suite (local stack)
+
+| Finding | Change |
+|---|---|
+| jContent 3.8 has no `window.jahia.toastDispatcher`: the screen never confirmed a save, publish or delete | Notifications through `useNotifications` of the host's shared `@jahia/react-material` (`import: false`); the screen spec asserts "Menu saved" |
+| Moonstone's `AccordionItem` renders `role="accordion-item"` and an `aria-controls` to an id it never sets (axe critical) | Add items is a Moonstone `Tab` (tablist, tab, arrow keys) over a `tabpanel` |
+| ChoiceTree's listbox has no accessible name (Moonstone's `Dropdown` takes no label) | `aria-label` set on it from the panel's name |
+| Muted text at `--color-gray_dark60` (3.8:1), unselected tabs (#7a7f88, 4.0:1), the fallback dropdown's placeholder, outlined danger buttons (#f44053, 3.7:1) | Full-strength `--color-gray_dark`; unselected tabs recoloured (the screen's one Moonstone recolouring); "Site default" a real option; Delete and Remove neutral outlined buttons with the Delete icon |
+| Open | Moonstone's filled accent (white on #00a0e3, 2.9:1) and danger buttons fail AA: Jahia's own primary colour, a decision for the user |

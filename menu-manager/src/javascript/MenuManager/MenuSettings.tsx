@@ -25,14 +25,18 @@ export interface MenuSettingsProps {
 const upper = (lang: string): string => lang.toUpperCase().replace('_', '-');
 
 /** A menu's own settings, where it is placed, and the operations on the whole menu. */
+const SITE_DEFAULT = 'site-default';
+
 export const MenuSettings = ({title, fallbackLanguage, siteDefault, siteLanguages, placements, isLocked, onRename, onFallback,
                                  onDuplicate, onDelete}: MenuSettingsProps): JSX.Element => {
     const {t} = useTranslation(NS);
     const [name, setName] = useState(title);
     useEffect(() => setName(title), [title]);
-    const options = [{label: t('settings.fallbackDefault', {lang: upper(siteDefault)}), value: ''},
+    // "Site default" is an option of its own: an empty value would draw it as Moonstone's grey placeholder
+    // (3.8:1 on white). Not a language code (they hold no "-"), so it cannot meet a site language.
+    const options = [{label: t('settings.fallbackDefault', {lang: upper(siteDefault)}), value: SITE_DEFAULT},
         ...siteLanguages.map(l => ({label: upper(l), value: l}))];
-    const current = options.find(o => o.value === (fallbackLanguage ?? '')) ?? options[0];
+    const current = options.find(o => o.value === (fallbackLanguage || SITE_DEFAULT)) ?? options[0];
     return (
         <div className={styles.card} data-mnu-role="menu-settings">
             <Typography variant="heading" component="h2">{t('settings.title')}</Typography>
@@ -47,7 +51,7 @@ export const MenuSettings = ({title, fallbackLanguage, siteDefault, siteLanguage
             <div>
                 <Typography weight="bold" className={styles.fieldLabel}>{t('settings.fallback')}</Typography>
                 <Dropdown value={current.value} label={current.label} data={options} isDisabled={isLocked}
-                          onChange={(_e, option) => onFallback(option.value ?? '')}/>
+                          onChange={(_e, option) => onFallback(!option.value || option.value === SITE_DEFAULT ? '' : option.value)}/>
                 <Typography variant="caption" className={styles.muted}>{t('settings.fallbackHelp')}</Typography>
             </div>
             <div>
@@ -64,7 +68,7 @@ export const MenuSettings = ({title, fallbackLanguage, siteDefault, siteLanguage
             </div>
             <div className={styles.dangerZone}>
                 <Button variant="outlined" icon={<Copy/>} label={t('settings.duplicate')} isDisabled={isLocked} onClick={onDuplicate}/>
-                <Button variant="outlined" color="danger" icon={<Delete/>} label={t('settings.delete')} isDisabled={isLocked} onClick={onDelete}/>
+                <Button variant="outlined" icon={<Delete/>} label={t('settings.delete')} isDisabled={isLocked} onClick={onDelete}/>
             </div>
         </div>
     );

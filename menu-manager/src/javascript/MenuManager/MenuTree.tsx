@@ -236,7 +236,7 @@ const RowBar = ({item, fallbackLanguage, isOpen, onToggle, handle}: RowBarProps)
             {handle ?? <span className={styles.handle}><HandleDrag/></span>}
             <span className={styles.kindIcon} aria-hidden="true">{KIND_ICON[item.kind]}</span>
             <span className={styles.labelBlock}>
-                <Typography weight="bold" className={styles.labelText} data-fallback={shown.fallback}>{shown.text || ' '}</Typography>
+                <Typography weight="bold" className={styles.labelText} data-fallback={shown.fallback} data-mnu-role="label">{shown.text || ' '}</Typography>
                 <Typography variant="caption" className={styles.subline}>
                     {t(`kind.${item.kind}`)}{sub ? ` · ${sub}` : ''}
                 </Typography>
@@ -393,7 +393,6 @@ const ItemEditor = ({item, items, language, fallbackLanguage, siteLanguages, onC
                 <Button
                     size="small"
                     variant="outlined"
-                    color="danger"
                     icon={<Delete/>}
                     label={t('editor.remove')}
                     onClick={() => {

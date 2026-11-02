@@ -2,6 +2,7 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useApolloClient, useMutation, useQuery} from '@apollo/client';
 import {useSelector} from 'react-redux';
+import {useNotifications} from '@jahia/react-material';
 import {
     Add,
     Banner,
@@ -110,7 +111,9 @@ export const MenuManager = ({siteKey}: {siteKey: string}): JSX.Element => {
     const [duplicateMenu] = useMutation(DUPLICATE_MENU);
     const [deleteMenu] = useMutation(DELETE_MENU);
 
-    const toast = (key: string): void => window.jahia?.toastDispatcher?.add({message: t(`toast.${key}`), variant: 'success'});
+    // jContent's own notifications (jContent 3.8 has no window.jahia.toastDispatcher)
+    const notifications = useNotifications() as {notify?: (message: string, options?: string[]) => void} | undefined;
+    const toast = (key: string): void => notifications?.notify?.(t(`toast.${key}`), ['closeButton']);
 
     const change = useCallback((next: Item[]): void => {
         setItems(next);

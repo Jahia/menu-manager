@@ -44,7 +44,9 @@ module.exports = (env, argv) => {
                     // Host-provided. Never bundled: the jcontent store is the one we read from.
                     'react-redux': {singleton: true, import: false},
                     redux: {singleton: true, import: false},
-                    '@apollo/client': {singleton: true, import: false}
+                    '@apollo/client': {singleton: true, import: false},
+                    // jContent's notifications (useNotifications), provided around every jContent route
+                    '@jahia/react-material': {singleton: true, import: false, requiredVersion: false}
                 }
             })),
             new CleanWebpackPlugin({verbose: false}),

@@ -1,7 +1,7 @@
-import React, {ComponentType, useMemo, useState} from 'react';
+import React, {ComponentType, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useQuery} from '@apollo/client';
-import {Accordion, AccordionItem, Button, Input, Link, OpenInNew, Page, Text, Typography} from '@jahia/moonstone';
+import {Button, Input, Link, OpenInNew, Page, Tab, TabItem, Text, Typography} from '@jahia/moonstone';
 import {registry} from '@jahia/ui-extender';
 import {NS} from '../i18n';
 import {PAGES} from './graphql';
@@ -27,33 +27,42 @@ const blank = (kind: Item['kind'], patch: Partial<Item>): Item => ({
 });
 
 /**
- * The left column, as WordPress has it: one panel per kind of item, each adding at the end of the
- * menu. Pages are chosen in the site's page tree with jContent's ChoiceTree; a section is a heading; an internal
+ * The left column, as WordPress has it: one panel per kind of item (Moonstone tabs), each adding at
+ * the end of the menu. Pages are chosen in the site's page tree with jContent's ChoiceTree; a section is a heading; an internal
  * link is any content, chosen with jContent's picker; an external link is an address.
  */
 export const AddItems = ({siteKey, language, onAdd, pickContent}: AddItemsProps): JSX.Element => {
     const {t} = useTranslation(NS);
-    const [open, setOpen] = useState('pages');
+    const [open, setOpen] = useState<PanelId>('pages');
+    const panels: {id: PanelId; label: string; icon: JSX.Element}[] = [
+        {id: 'pages', label: t('add.pages'), icon: <Page/>},
+        {id: 'section', label: t('add.section'), icon: <Text/>},
+        {id: 'internal', label: t('add.internal'), icon: <Link/>},
+        {id: 'external', label: t('add.external'), icon: <OpenInNew/>}
+    ];
     return (
         <div className={styles.card} data-mnu-role="add-items">
             <Typography variant="heading" component="h2">{t('add.title')}</Typography>
-            <Accordion openedItem={open} onSetOpenedItem={setOpen}>
-                <AccordionItem id="pages" label={t('add.pages')} icon={<Page/>}>
-                    <PagesPanel siteKey={siteKey} language={language} onAdd={onAdd}/>
-                </AccordionItem>
-                <AccordionItem id="section" label={t('add.section')} icon={<Text/>}>
-                    <SectionPanel onAdd={onAdd}/>
-                </AccordionItem>
-                <AccordionItem id="internal" label={t('add.internal')} icon={<Link/>}>
-                    <InternalPanel onAdd={onAdd} pickContent={pickContent}/>
-                </AccordionItem>
-                <AccordionItem id="external" label={t('add.external')} icon={<OpenInNew/>}>
-                    <ExternalPanel onAdd={onAdd}/>
-                </AccordionItem>
-            </Accordion>
+            {/* Moonstone tabs (tablist, tab, arrow keys): its Accordion renders an invalid ARIA role */}
+            <div className={styles.tabs}>
+                <Tab aria-label={t('add.title')}>
+                    {panels.map(p => (
+                        <TabItem key={p.id} id={`mnu-add-tab-${p.id}`} aria-controls={`mnu-add-panel-${p.id}`} label={p.label} icon={p.icon}
+                                 isSelected={open === p.id} onClick={() => setOpen(p.id)}/>
+                    ))}
+                </Tab>
+            </div>
+            <div id={`mnu-add-panel-${open}`} role="tabpanel" aria-labelledby={`mnu-add-tab-${open}`} data-mnu-panel={open}>
+                {open === 'pages' && <PagesPanel siteKey={siteKey} language={language} onAdd={onAdd}/>}
+                {open === 'section' && <SectionPanel onAdd={onAdd}/>}
+                {open === 'internal' && <InternalPanel onAdd={onAdd} pickContent={pickContent}/>}
+                {open === 'external' && <ExternalPanel onAdd={onAdd}/>}
+            </div>
         </div>
     );
 };
+
+type PanelId = 'pages' | 'section' | 'internal' | 'external';
 
 /** The props jContent's ChoiceTree selector takes (Content Editor selector type contract). */
 interface ChoiceTreeProps {
@@ -88,6 +97,12 @@ const PagesPanel = ({siteKey, language, onAdd}: {siteKey: string; language: stri
         return root ? [root, ...root.descendants.nodes] : [];
     }, [data]);
 
+    // Moonstone's Dropdown takes no label and ChoiceTree forwards none: name its listbox after the panel
+    const choice = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        choice.current?.querySelector('[role="listbox"]')?.setAttribute('aria-label', t('add.pages'));
+    });
+
     const add = (): void => {
         onAdd(pages.filter(p => selected.includes(p.uuid)).map(p => blank('page', {
             target: {uuid: p.uuid, path: p.path, title: p.displayName, nodeType: 'jnt:page', available: true, inLive: true}
@@ -99,7 +114,7 @@ const PagesPanel = ({siteKey, language, onAdd}: {siteKey: string; language: stri
         <div className={styles.panelBody}>
             <Typography variant="caption" className={styles.muted}>{t('add.pagesHelp')}</Typography>
             {ChoiceTree ? (
-                <div data-mnu-role="page-choice">
+                <div data-mnu-role="page-choice" ref={choice}>
                     <ChoiceTree
                         id="mnu-add-pages"
                         field={field}

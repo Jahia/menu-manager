@@ -56,7 +56,8 @@
 }
 
 .muted {
-    color: var(--color-gray_dark60, #5b6770);
+    /* full strength: the 60% step reads 3.8:1 on white */
+    color: var(--color-gray_dark, #293136);
 }
 
 .toolbar {
@@ -80,6 +81,24 @@
 }
 
 /* ---- Add items --------------------------------------------------------------------------------- */
+
+/* Moonstone's tab bar keeps a fixed height: scrolled sideways rather than wrapped under the panel */
+.tabs {
+    overflow-x: auto;
+    min-width: 0;
+}
+
+.tabs > [role="tablist"] {
+    flex-wrap: nowrap;
+    width: max-content;
+}
+
+/* The one place this screen recolours Moonstone: an unselected tab's grey (#7a7f88) reads 4.0:1 on
+   white, under WCAG AA's 4.5:1 */
+.tabs [role="tab"][aria-selected="false"],
+.tabs [role="tab"][aria-selected="false"] .moonstone-typography {
+    color: var(--color-gray_dark, #293136);
+}
 
 .panelBody {
     display: flex;
@@ -167,7 +186,8 @@
     border: 0;
     border-radius: 4px;
     background: transparent;
-    color: var(--color-gray_dark60, #5b6770);
+    /* full strength: the 60% step reads 3.8:1 on white */
+    color: var(--color-gray_dark, #293136);
     cursor: grab;
     flex-shrink: 0;
 }
@@ -199,14 +219,16 @@
 
 .labelText[data-fallback="true"] {
     font-style: italic;
-    color: var(--color-gray_dark60, #5b6770);
+    /* full strength: the 60% step reads 3.8:1 on white */
+    color: var(--color-gray_dark, #293136);
 }
 
 .subline {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: var(--color-gray_dark60, #5b6770);
+    /* full strength: the 60% step reads 3.8:1 on white */
+    color: var(--color-gray_dark, #293136);
 }
 
 .badges {
@@ -311,7 +333,8 @@
     border: 1px dashed var(--color-gray40, #b5bdc2);
     border-radius: 4px;
     text-align: center;
-    color: var(--color-gray_dark60, #5b6770);
+    /* full strength: the 60% step reads 3.8:1 on white */
+    color: var(--color-gray_dark, #293136);
 }
 
 /* ---- Preview: a neutral sketch of the menu, never the site's own styles ------------------------- */
@@ -342,7 +365,8 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
     font-size: 12px;
-    color: var(--color-gray_dark60, #5b6770);
+    /* full strength: the 60% step reads 3.8:1 on white */
+    color: var(--color-gray_dark, #293136);
 }
 
 .previewButton {
@@ -450,7 +474,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: var(--color-gray_dark60, #5b6770);
+    /* full strength: the 60% step reads 3.8:1 on white */
+    color: var(--color-gray_dark, #293136);
 }
 
 .promoActions {

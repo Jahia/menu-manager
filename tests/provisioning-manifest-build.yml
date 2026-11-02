@@ -1,0 +1,21 @@
+# What the CI Jahia needs besides the modules under test, which come from the build job's artifacts
+# (tests/artifacts, installed by @jahia/cypress: the jar first, then the views package).
+# jContent 3.7 or later (menu-manager requires [3.7,4); the 8.2.3.2 image ships 3.5.0).
+- installBundle:
+      - 'mvn:org.jahia.modules/jcontent/3.8.0'
+  autoStart: true
+  uninstallPreviousVersion: true
+
+# menu-manager-views and the template set both require javascript-modules-engine [1.3,2).
+- installBundle:
+      - 'mvn:org.jahia.modules/javascript-modules-engine/1.3.1'
+  autoStart: true
+  uninstallPreviousVersion: true
+
+# The template set of the test sites: its free zone (ctpl:freeZone) accepts any droppable content, so
+# the Menu component goes into a page without the template set knowing this module. A list item of its
+# own, after the engine: the js: protocol exists only once the engine has started.
+- installBundle:
+      - 'js:https://github.com/Jahia/classic-templates/releases/download/0_9_0/classic-templates-0.9.0.tgz'
+  autoStart: true
+  uninstallPreviousVersion: true
