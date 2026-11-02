@@ -66,3 +66,11 @@
 | Mega menu | A fourth layout (`mega`, added to the `layout` choice list: a widening, installed as a minor change): the horizontal bar's behaviour, each panel the full width of the menu with the item's intro, one column per child, and the promotion |
 | Promotion (user asked whether it is page-level) | On the **menu item** (`promo*` properties of `mnumix:menuItem`, top-level items only, edited in the Menus screen, per language): a custom menu points to any page or to a section with no page. A page item without a promotion title of its own shows its page's classic-templates `ctplmix:navPromo` (`promoTitle`, `promoText`, `image`, `imageAlt`, `ctaLabel`, `promoLink`, `promoUrl`), read only when that type exists, so promotions already written on pages keep working and nothing depends on classic-templates |
 | Access | The promotion's image and link are read with the visitor's session: one the visitor may not read is left out (the button then falls back to the address, else the item's link); both are cache dependencies |
+
+## 2026-11-02: phase 5, classic-templates (local, not pushed)
+
+| Change | What | Checked on the local stack (exactlytest) |
+|---|---|---|
+| A, `feat/nav-menu-component-areas` | `ctpl:pageArea`, `ctpl:headerArea`, `ctpl:footerArea` take a second residual line `+ * (jmix:navMenuComponent)` | Installs over content with no major-change refusal; the page area accepts `mnu:navigation`; a menu placed directly in the main area renders on live |
+| B, `feat/header-menu-source` | `ctpl:mainNavigation` gets `menuSource` (`pageTree`, `menu`) and `menu` (weakreference with `choicelist[nodes='$currentSite/menus;mnu:menu']`, no type constraint: Menu Manager's type); the view reads `menuManager.resolvedMenu` (no current page: the header is shared, the script marks it) and maps the items onto the page-tree items, so the dropdown and mega styles, the script and the promotion slot are unchanged; top-level promotions in the mega style; page tree plus an edit-mode note when the menu cannot be read | Header in the mega style from the custom menu on live as guest: items, promotion, new-tab text, the guest-locked item left out; root then guest: no leak |
+| Open | Whether `choicelist[nodes=...;mnu:menu]` behaves on an instance without Menu Manager (the form's menu list) is not checked: it needs an instance without the module |
