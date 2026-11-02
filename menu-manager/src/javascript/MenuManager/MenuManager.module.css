@@ -402,24 +402,127 @@
     border-top: 1px solid var(--color-gray_light40, #dde2e5);
 }
 
-/* ---- Promotion of a top-level item -------------------------------------------------------------- */
+/* ---- Promotion of a top-level item: a switch, then the image on the left and the texts on the right */
 
 .promo {
-    min-width: 0;
-    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium, 16px);
     padding: var(--spacing-medium, 16px);
     border: 1px solid var(--color-gray_light40, #dde2e5);
     border-radius: 4px;
     background: var(--color-gray_light20, #f7f9fa);
+    min-width: 0;
 }
 
-.promo > legend {
-    padding: 0 6px;
+.promoHead {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-.promoGrid {
+.promoSwitch {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-small, 8px);
+    cursor: pointer;
+}
+
+.promoBody {
+    display: grid;
+    grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+    gap: var(--spacing-large, 24px);
+    min-width: 0;
+}
+
+@media (max-width: 900px) {
+    .promoBody {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.promoMediaCol,
+.promoTextCol {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium, 16px);
+    min-width: 0;
+}
+
+.promoMediaCol {
+    gap: var(--spacing-small, 8px);
+}
+
+.promoThumb {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border: 1px solid var(--color-gray_light40, #dde2e5);
+    border-radius: 4px;
+    background: var(--color-white);
+}
+
+.promoThumb[data-empty="true"] {
+    border-style: dashed;
+}
+
+.promoThumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.promoFileName {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-gray_dark60, #5b6770);
+}
+
+.promoActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-small, 8px);
+}
+
+.promoPair {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
     gap: var(--spacing-medium, 16px);
-    margin-top: var(--spacing-small, 8px);
+}
+
+.promoLinkRow {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-small, 8px);
+}
+
+.promoLinkRow > :first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.promoTarget {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-small, 8px);
+    padding: 4px 4px 4px 10px;
+    border: 1px solid var(--color-gray_light40, #dde2e5);
+    border-radius: 4px;
+    background: var(--color-white);
+    min-width: 0;
+}
+
+.promoTargetText {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.promoTargetText > * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

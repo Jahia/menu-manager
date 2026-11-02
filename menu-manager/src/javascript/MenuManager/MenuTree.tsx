@@ -38,6 +38,7 @@ import {
     Warning
 } from '@jahia/moonstone';
 import {NS} from '../i18n';
+import {PromoEditor} from './PromoEditor';
 import {displayLabel, drop, find, FlatItem, flatten, indent, Item, Kind, locate, moveDown, moveUp, outdent, projection, remove, Style, update} from './tree';
 import styles from './MenuManager.module.css';
 
@@ -406,67 +407,5 @@ const ItemEditor = ({item, items, language, fallbackLanguage, siteLanguages, onC
                 />
             </div>
         </div>
-    );
-};
-
-interface PromoEditorProps {
-    item: Item;
-    fallbackLanguage: string;
-    onPatch: (patch: Partial<Item['promo']>) => void;
-    onPick: (field: 'image' | 'target') => void;
-}
-
-/** A top-level item's promotion, shown by mega menus beside its columns. */
-const PromoEditor = ({item, fallbackLanguage, onPatch, onPick}: PromoEditorProps): JSX.Element => {
-    const {t} = useTranslation(NS);
-    const {promo} = item;
-    const id = (field: string): string => `mnu-${item.key}-promo-${field}`;
-    return (
-        <fieldset className={`${styles.editorWide} ${styles.promo}`}>
-            <legend className={styles.fieldLabel}><Typography weight="bold">{t('editor.promo.title')}</Typography></legend>
-            <Typography variant="caption" className={styles.muted}>{t('editor.promo.help')}</Typography>
-            <div className={styles.promoGrid}>
-                <div>
-                    <label className={styles.fieldLabel} htmlFor={id('title')}><Typography>{t('editor.promo.promoTitle')}</Typography></label>
-                    <Input id={id('title')} value={promo.title}
-                           placeholder={promo.fallbackTitle ? t('editor.labelPlaceholderFallback', {lang: upper(fallbackLanguage), label: promo.fallbackTitle}) : ''}
-                           onChange={e => onPatch({title: e.target.value})}/>
-                </div>
-                <div>
-                    <label className={styles.fieldLabel} htmlFor={id('label')}><Typography>{t('editor.promo.linkLabel')}</Typography></label>
-                    <Input id={id('label')} value={promo.linkLabel} onChange={e => onPatch({linkLabel: e.target.value})}/>
-                </div>
-                <div className={styles.editorWide}>
-                    <label className={styles.fieldLabel} htmlFor={id('text')}><Typography>{t('editor.promo.text')}</Typography></label>
-                    <Textarea id={id('text')} value={promo.text} onChange={e => onPatch({text: e.target.value})}/>
-                </div>
-                <div>
-                    <Typography className={styles.fieldLabel}>{t('editor.promo.image')}</Typography>
-                    <div className={styles.targetLine}>
-                        {promo.image && <Typography title={promo.image.path ?? ''}>{promo.image.title}</Typography>}
-                        <Button size="small" variant="outlined" label={t('editor.promo.chooseImage')} onClick={() => onPick('image')}/>
-                        {promo.image && <Button size="small" variant="ghost" label={t('editor.promo.removeImage')} onClick={() => onPatch({image: null})}/>}
-                    </div>
-                </div>
-                <div>
-                    <label className={styles.fieldLabel} htmlFor={id('alt')}><Typography>{t('editor.promo.imageAlt')}</Typography></label>
-                    <Input id={id('alt')} value={promo.imageAlt} placeholder={t('editor.promo.imageAltHelp')} onChange={e => onPatch({imageAlt: e.target.value})}/>
-                </div>
-                <div>
-                    <Typography className={styles.fieldLabel}>{t('editor.promo.link')}</Typography>
-                    <div className={styles.targetLine}>
-                        {promo.target && <Typography title={promo.target.path ?? ''}>{promo.target.title}</Typography>}
-                        <Button size="small" variant="outlined" label={t('editor.promo.chooseLink')} onClick={() => onPick('target')}/>
-                        {promo.target && <Button size="small" variant="ghost" label={t('editor.promo.removeLink')} onClick={() => onPatch({target: null})}/>}
-                    </div>
-                </div>
-                {!promo.target && (
-                    <div>
-                        <label className={styles.fieldLabel} htmlFor={id('url')}><Typography>{t('editor.promo.url')}</Typography></label>
-                        <Input id={id('url')} value={promo.url} placeholder="https://" onChange={e => onPatch({url: e.target.value})}/>
-                    </div>
-                )}
-            </div>
-        </fieldset>
     );
 };

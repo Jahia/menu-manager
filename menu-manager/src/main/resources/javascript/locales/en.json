@@ -97,8 +97,7 @@
       "out": "Out from under {{label}}",
       "toTop": "To the top",
       "promo": {
-        "title": "Promotion",
-        "help": "Shown in mega menus beside this item's columns. Without a title, a page item shows its page's own promotion, if it has one.",
+        "help": "Shown in mega menus beside this item's columns.",
         "promoTitle": "Title",
         "text": "Text",
         "image": "Image",
@@ -111,7 +110,13 @@
         "chooseLink": "Choose content",
         "removeLink": "Remove link",
         "url": "Or an address",
-        "badge": "Promotion"
+        "badge": "Promotion",
+        "toggle": "Promotion in mega menus",
+        "offHelp": "Off: this item has no promotion of its own. A page item then shows its page's promotion, if it has one.",
+        "noImage": "No image",
+        "unavailable": "Image unavailable: deleted, or you cannot read it",
+        "changeImage": "Change image",
+        "linkHelp": "The page or content the button opens, or an address outside the site. Without either, the button opens this item's own link."
       }
     },
     "settings": {

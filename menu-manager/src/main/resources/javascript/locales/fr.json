@@ -97,8 +97,7 @@
       "out": "Sortir de sous {{label}}",
       "toTop": "Tout en haut",
       "promo": {
-        "title": "Promotion",
-        "help": "Affichée dans les méga-menus à côté des colonnes de cet élément. Sans titre, un élément page affiche la promotion de sa page, s'il en a une.",
+        "help": "Affichée dans les méga-menus à côté des colonnes de cet élément.",
         "promoTitle": "Titre",
         "text": "Texte",
         "image": "Image",
@@ -111,7 +110,13 @@
         "chooseLink": "Choisir un contenu",
         "removeLink": "Retirer le lien",
         "url": "Ou une adresse",
-        "badge": "Promotion"
+        "badge": "Promotion",
+        "toggle": "Promotion dans les méga-menus",
+        "offHelp": "Désactivée : cet élément n'a pas de promotion propre. Un élément page affiche alors la promotion de sa page, s'il en a une.",
+        "noImage": "Aucune image",
+        "unavailable": "Image indisponible : supprimée, ou vous ne pouvez pas la lire",
+        "changeImage": "Changer d'image",
+        "linkHelp": "La page ou le contenu qu'ouvre le bouton, ou une adresse hors du site. Sans l'un ni l'autre, le bouton ouvre le lien de l'élément."
       }
     },
     "settings": {
