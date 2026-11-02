@@ -69,24 +69,27 @@ jobs:
       - run: corepack enable
       # The ESLint config of each carries the Sonar block: the gate's usual rules fail here first
       # audit-ci on the runtime dependencies: the shared action audits the root package.json, which
-      # this monorepo does not have
+      # this monorepo does not have. Installs run no package scripts (Sonar S6505): linting and
+      # type-checking need none
       - name: Menus screen (UI extension)
         working-directory: menu-manager
         run: |
-          yarn install --frozen-lockfile
+          yarn install --frozen-lockfile --ignore-scripts
           yarn typecheck
           yarn lint --max-warnings 0
           npx --yes audit-ci@7 --critical --skip-dev
       - name: Views
         working-directory: menu-manager-views
         run: |
-          yarn install --immutable
+          yarn install --immutable --mode=skip-build
           yarn lint --max-warnings 0
           npx --yes audit-ci@7 --critical --skip-dev
       - name: Cypress suite
         working-directory: tests
+        env:
+          CYPRESS_INSTALL_BINARY: 0
         run: |
-          yarn install --frozen-lockfile
+          yarn install --frozen-lockfile --ignore-scripts
           yarn typecheck
 
   build:

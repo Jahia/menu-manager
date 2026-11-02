@@ -163,26 +163,31 @@ public class MenuResolverImpl implements MenuResolver {
         if (depth > ctx.maxDepth) {
             return out;
         }
+        // At most as many subpages as a menu built by hand may hold: the walk is open to visitors
         for (JCRNodeWrapper child : page.getNodes()) {
-            if (!child.isNodeType(PAGE_TYPE)) {
-                continue;
-            }
-            ctx.dependencies.add(child.getPath());
-            if (hiddenFromNavigation(child) || invalidIn(child, ctx.language)) {
-                continue;
-            }
             if (ctx.subpages >= MenuTree.MAX_ITEMS) {
-                // as many as a menu built by hand may hold: the walk is open to visitors
                 break;
             }
-            String title = first(text(child, "jcr:title"), ctx.fallback(child, "jcr:title"));
-            if (title != null) {
-                ctx.subpages++;
-                out.add(new ResolvedItem(child.getIdentifier(), MenuItemKind.PAGE, title, null, "default", child.getIdentifier(),
-                        child.getPath(), null, false, ctx.isCurrent(child), ctx.inTrail(child), subpages(child, depth + 1, ctx), null));
+            if (child.isNodeType(PAGE_TYPE)) {
+                ctx.dependencies.add(child.getPath());
+                subpage(child, depth, ctx).ifPresent(out::add);
             }
         }
         return out;
+    }
+
+    /** A subpage shown in navigation, titled in the language or the fallback language, with its own subpages. */
+    private Optional<ResolvedItem> subpage(JCRNodeWrapper child, int depth, Context ctx) throws RepositoryException {
+        if (hiddenFromNavigation(child) || invalidIn(child, ctx.language)) {
+            return Optional.empty();
+        }
+        String title = first(text(child, "jcr:title"), ctx.fallback(child, "jcr:title"));
+        if (title == null) {
+            return Optional.empty();
+        }
+        ctx.subpages++;
+        return Optional.of(new ResolvedItem(child.getIdentifier(), MenuItemKind.PAGE, title, null, "default", child.getIdentifier(),
+                child.getPath(), null, false, ctx.isCurrent(child), ctx.inTrail(child), subpages(child, depth + 1, ctx), null));
     }
 
 

@@ -4,6 +4,7 @@ import org.jahia.community.menumanager.model.MenuItemKind;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,6 +18,7 @@ class MenuStoreImplTest {
     @Test
     void namesItemNodesAfterTheirTypeNeverLikeAProperty() {
         assertThat(MenuStoreImpl.nodeName(MenuItemKind.PAGE)).isEqualTo("pageItem");
-        assertThat(Arrays.stream(MenuItemKind.values()).map(MenuStoreImpl::nodeName)).doesNotContainAnyElementsOf(ITEM_PROPERTIES);
+        List<String> names = Arrays.stream(MenuItemKind.values()).map(MenuStoreImpl::nodeName).toList();
+        assertThat(names).isNotEmpty().doesNotContainAnyElementsOf(ITEM_PROPERTIES);
     }
 }

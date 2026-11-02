@@ -86,6 +86,8 @@ describe('Menu Manager - accessibility', () => {
         cy.login(admin.username, admin.password);
         cy.visit(`/jahia/jcontent/${siteKey}/en/apps/menuManager`);
         cy.get('[data-mnu-role="structure"]', {timeout: 30000}).should('contain', 'About us');
+        // The preview loads its own query: check it drawn (a highlighted item, a button), or axe sees none of it
+        cy.get('[data-mnu-role="preview"]').should('contain', 'Jahia').and('contain', 'Sign up');
         cy.injectAxe();
         cy.checkA11y(screen('[data-mnu-role="menu-manager"]'), wcag, report);
         // an item's editor open, with unsaved changes (Save and Discard enabled)

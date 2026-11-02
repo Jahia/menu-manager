@@ -29,6 +29,9 @@ public class MenuStoreImpl implements MenuStore {
 
     /** The page item's reference to its page. */
     private static final String PAGE_PROPERTY = "page";
+    /** A promotion's image and the content its button opens. */
+    private static final String PROMO_IMAGE = "promoImage";
+    private static final String PROMO_TARGET = "promoTarget";
 
     static final String MENUS_TYPE = "mnu:menus";
     static final String REVISION = "revision";
@@ -206,18 +209,18 @@ public class MenuStoreImpl implements MenuStore {
         setOrRemove(node, "promoImageAlt", promo.imageAlt());
         setOrRemove(node, "promoUrl", promo.url());
         if (promo.image() == null) {
-            setOrRemove(node, "promoImage", null);
-        } else if (!keeps(node, "promoImage", promo.image())) {
+            setOrRemove(node, PROMO_IMAGE, null);
+        } else if (!keeps(node, PROMO_IMAGE, promo.image())) {
             JCRNodeWrapper image = reference(session, promo.image());
             if (!image.isNodeType("jmix:image")) {
                 throw new MenuException(MenuException.BAD_TARGET, "Not an image: " + promo.image());
             }
-            node.setProperty("promoImage", session.getValueFactory().createValue(image, true));
+            node.setProperty(PROMO_IMAGE, session.getValueFactory().createValue(image, true));
         }
         if (promo.target() == null) {
-            setOrRemove(node, "promoTarget", null);
-        } else if (!keeps(node, "promoTarget", promo.target())) {
-            node.setProperty("promoTarget", session.getValueFactory().createValue(reference(session, promo.target()), true));
+            setOrRemove(node, PROMO_TARGET, null);
+        } else if (!keeps(node, PROMO_TARGET, promo.target())) {
+            node.setProperty(PROMO_TARGET, session.getValueFactory().createValue(reference(session, promo.target()), true));
         }
     }
 
