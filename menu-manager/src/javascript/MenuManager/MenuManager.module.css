@@ -238,11 +238,13 @@
     grid-column: 1 / -1;
 }
 
-.languagesField {
+/* Jahia's legacy GWT stylesheet (anthracite/css/edit_<lang>.css) styles every fieldset with !important
+   (padding 43px 10px 20px 39px, margin-right 23px, a bottom border): only !important outranks it */
+.editor fieldset.languagesField {
     min-width: 0;
-    margin: 0;
-    padding: 0;
-    border: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
 }
 
 .languagesField > legend {
