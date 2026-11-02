@@ -22,6 +22,13 @@ describe('Menu Manager - accessibility', () => {
     const admin: TestUser = {username: 'mnu-a11y-admin', password: 'mnuAdmin1234'};
     const wcag = {runOnly: {type: 'tag' as const, values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']}};
     const views = ['default', 'mega', 'vertical', 'columns'];
+    /**
+     * The screen as axe checks it, without Moonstone's filled accent and danger buttons: white on
+     * #00a0e3 (2.9:1) and on Moonstone's red miss AA, and they are Jahia's own back-office colours,
+     * kept as jContent draws them (user decision, 2026-11-02; to fix in Moonstone). Everything else,
+     * their outlined and ghost buttons included, is checked.
+     */
+    const screen = (root: string) => ({include: [[root]], exclude: [['.moonstone-button_accent'], ['.moonstone-button_danger']]});
 
     /** Fails with the list of violations, written to the terminal too. */
     const report = (violations: {id: string; impact?: string | null; nodes: {html: string; failureSummary?: string}[]}[]): void => {
@@ -80,16 +87,17 @@ describe('Menu Manager - accessibility', () => {
         cy.visit(`/jahia/jcontent/${siteKey}/en/apps/menuManager`);
         cy.get('[data-mnu-role="structure"]', {timeout: 30000}).should('contain', 'About us');
         cy.injectAxe();
-        cy.checkA11y('[data-mnu-role="menu-manager"]', wcag, report);
+        cy.checkA11y(screen('[data-mnu-role="menu-manager"]'), wcag, report);
         // an item's editor open, with unsaved changes (Save and Discard enabled)
         cy.get('button[aria-label="Edit About us"]').click();
         cy.contains('button', 'Down one').click();
         cy.contains('Unsaved changes').should('exist');
-        cy.checkA11y('[data-mnu-role="menu-manager"]', wcag, report);
+        cy.checkA11y(screen('[data-mnu-role="menu-manager"]'), wcag, report);
         // the confirmation dialog (Moonstone's Modal, portaled to body)
         cy.contains('button', 'Remove').click();
         cy.contains('Please confirm').should('be.visible');
-        cy.checkA11y('.moonstone-modal, [role="dialog"]', wcag, report);
+        cy.get('[role="dialog"]').should('be.visible').and('contain', 'Please confirm');
+        cy.checkA11y(screen('[role="dialog"]'), wcag, report);
         cy.contains('button', /^Cancel$/).click();
         cy.visit('/cms/logout', {failOnStatusCode: false});
     });
