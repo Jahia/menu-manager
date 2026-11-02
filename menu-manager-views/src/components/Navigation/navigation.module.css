@@ -66,15 +66,23 @@
   font-weight: var(--mnu-heading-weight);
 }
 
-.button {
+/* Doubled class: the button keeps its padding over the layout's entry rules (.topEntry, .megaHead,
+   .columnHead), which come later and set the padding of a plain link. */
+.button.link,
+.button.section {
+  align-self: center;
   padding: 0.4em 1em;
   border-radius: 999px;
   background: var(--mnu-action);
   color: var(--mnu-on-action);
+  font-size: 1em;
+  line-height: 1.25;
+  letter-spacing: normal;
+  text-transform: none;
   font-weight: var(--mnu-heading-weight);
 }
 
-.button:hover {
+.button.link:hover {
   color: var(--mnu-on-action);
   text-decoration: none;
   filter: brightness(1.08);
