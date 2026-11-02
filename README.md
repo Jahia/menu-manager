@@ -30,7 +30,7 @@ Menus built by hand in jContent, independent of the page tree, for Jahia 8.2.
    items to order and nest them (or use each item's Move links); translate the labels by switching
    the language; **Save**, then **Publish**.
 3. Add the **Menu** component to a page (a Free zone on a classic-templates site), choose the menu,
-   the levels shown and its accessible name, and its layout in **Layout > View**.
+   the levels shown and its accessible name, and its layout in **Layout > Select a view**.
 
 In Page Builder, each Menu component says which menu it shows and links to it: **Edit this menu**
 opens jContent > Menus on that menu (`/jahia/jcontent/<site>/<language>/apps/menuManager?menu=<path>`).
@@ -112,7 +112,7 @@ JAHIA_URL=http://localhost:8080 SUPER_USER_PASSWORD=root1234 yarn e2e:ci
 
 | Spec | Covers |
 |---|---|
-| `happy-path` | Build a menu of every kind of item through the API, publish, render on live in EN and FR (fallback), each view picked in Layout > View, the current page, a published change through the cache, the button style |
+| `happy-path` | Build a menu of every kind of item through the API, publish, render on live in EN and FR (fallback), each view picked in Layout > Select a view, the current page, a published change through the cache, the button style |
 | `authorization` | Site administrators manage menus; an editor (past the API filter), another site's administrator and a guest are refused every field of the Menus screen; a guest reads `resolvedMenu` only |
 | `edge-cases` | Every refusal of the save API (stale revision, addresses, depth, size, values, targets) leaves the menu as it was; markup characters stay text; fallback language; items hidden per language; depth; subpages; deleted and unpublished targets |
 | `acl-and-cache` | A page with broken ACL inheritance: shown to the users who may read it only, in the API and on live; root then guest, two users with the same rights then others, a guest warming the cache first |

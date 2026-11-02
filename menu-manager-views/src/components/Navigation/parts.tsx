@@ -9,7 +9,7 @@ import classes from "./navigation.module.css";
 
 /**
  * What the views of mnu:navigation share. Not a view: each layout is a view of its own, one file
- * each (default = horizontal bar, mega, vertical, columns), chosen by the editor in Layout > View
+ * each (default = horizontal bar, mega, vertical, columns), chosen by the editor in Layout > Select a view
  * (j:view); they all resolve the menu here and draw items with the parts below.
  */
 
